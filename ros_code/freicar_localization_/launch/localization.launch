@@ -2,6 +2,6 @@
 
 <node pkg="freicar_sign_detect" type="freicar_sign_detect_node" name="sign_detector" output="screen"/>
 	<arg name="evaluate" default="true" />	<arg name="use_lane_regression" default="false" />
-	<node name="freicar_localization" pkg="freicar_localization_" type="freicar_localization_node" respawn="false" output="screen"> <param name="evaluate"  type="bool" value="$(arg evaluate)" />		<param name="use_lane_regression"       type="bool" value="$(arg use_lane_regression)" />	</node>
+	<node name="freicar_localization_" pkg="freicar_localization__" type="freicar_localization__node" respawn="false" output="screen"> <param name="evaluate"  type="bool" value="$(arg evaluate)" />		<param name="use_lane_regression"       type="bool" value="$(arg use_lane_regression)" />	</node>
 
 </launch>
