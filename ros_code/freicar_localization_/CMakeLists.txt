@@ -88,7 +88,7 @@ target_link_libraries(ros_map
 )
 
 
-add_executable(${PROJECT_NAME}_node src/ros_pf_localization.cpp)
+add_executable(${PROJECT_NAME}_node src/ros_pf_localization.cpp/particle_filter.cpp))
 
 add_dependencies(${PROJECT_NAME}_node ${catkin_EXPORTED_TARGETS})
 
