@@ -1,0 +1,2 @@
+- setup-file:
+    local-name: /home/freicar/freicar_ws/src/freicar_base/freicar_map/cmake-build-debug/devel/setup.sh

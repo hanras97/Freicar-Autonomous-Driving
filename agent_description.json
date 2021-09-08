@@ -1,0 +1,7 @@
+{
+    "agent_name": "deploy_teamname",
+    "url": "https://aisgit.informatik.uni-freiburg.de/vertensj/freicar_demo_submission.git",
+    "capabilities": ["simulated", "real"],
+    "parameters": [
+    ]
+}
