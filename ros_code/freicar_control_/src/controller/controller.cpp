@@ -160,14 +160,43 @@ void controller::sub_overtake(std_msgs::Bool msg)
     overtake = msg.data;
 }
 
+void controller::sub_lidar(sensor_msgs::PointCloud2 data)
+{
+//    std::cout << "subscribed to lidar !!!" << std::endl;
+//    BOOST_FOREACH (const pcl::PointXYZ& pt, data)
 
+    sensor_msgs::PointCloud out_pc;
+    sensor_msgs::convertPointCloud2ToPointCloud(data, out_pc);
+    int counter = 0;
+    for (int i =0; i<out_pc.points.size();i++)
+    {
+        geometry_msgs::Point32 point;
+        point.z = out_pc.points[i].z ;
+//        std::cout<<"point z"<<point.z<<std::endl;
+        if(out_pc.points[i].z > 2.9)
+        {
+            counter = counter + 1;
+        }
+
+
+
+//        pcl::toROSMsg (*cloud, image_)
+//        pcl::
+
+    }
+//    std::cout<<"counter"<<counter<<std::endl;
+
+
+
+}
+//HERE
 void controller::sub_HLC (freicar_common::FreiCarControl msg)
 {
     HLC_msg.command = msg.command;
     HLC_msg.name = msg.name;
     HLC_bool = true;
 }
-
+//STOP HERE
 /*
  * Virtual function that needs to be reimplemented
  */
@@ -201,20 +230,19 @@ controller::controller():pos_tol_(0.1), idx_(0),
     lookahead_.header.frame_id = map_frame_id_;
     lookahead_.child_frame_id = target_frame_id_;
     lookahead_.transform.rotation.w = 1.0;
-//STOP HERE//STOP HERE
-//    ros::Subscriber sub3 = node_handle->subscribe("car_localization", 1, callback_car_localization);
-//    ros::Subscriber sub3 = node_handle->subscribe("car_localization", 1, callback_car_localization);
+
 
     // Subscribers to path segment and odometry
     sub_path_ = nh_.subscribe("path_segment", 1, &controller::receivePath, this);
     sub_odom_ = nh_.subscribe("odometry", 1, &controller::controller_step, this);
     sub_stop_ = nh_.subscribe("Stop_sign", 1, &controller::sub_stop,this);
-    //min_depth_ = nh_.subscribe("min_depth", 1, &controller::min_depth,this);
-    //sub_lidar_ = nh_.subscribe("freicar_1/sim/lidar", 1, &controller::sub_lidar,this);
-    //sub_overtake_ = nh_.subscribe("/overtake", 1000, &controller::sub_overtake,this);
-
-    //sub_hlc_ = nh_.subscribe("/overtake", 1000, &controller::sub_overtake,this);
-
+    min_depth_ = nh_.subscribe("min_depth", 1, &controller::min_depth,this);
+    sub_lidar_ = nh_.subscribe("freicar_1/sim/lidar", 1, &controller::sub_lidar,this);
+    sub_overtake_ = nh_.subscribe("/overtake", 1000, &controller::sub_overtake,this);
+    //HERE
+    sub_hlc_ = nh_.subscribe("/overtake", 1000, &controller::sub_overtake,this);
+    //STOP HERE
+//    ros::Subscriber sub3 = node_handle->subscribe("car_localization", 1, callback_car_localization);
     // Publishers for the control command and the "reached" message
     pub_acker_ = nh_.advertise<raiscar_msgs::ControlCommand>("control", 1);
     pub_goal_reached_ = nh_.advertise<std_msgs::Bool>("goal_reached", 1);
