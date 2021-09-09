@@ -20,8 +20,6 @@ float PID::step(const float error, const ros::Time stamp){
 
     double out = p_ * error + i_ * integral + d_ * delta_e; // TODO  : Optimise later
 
-//    std::cout << "P value:  " << p_ * error << " D value: " << d_ * delta_e << " I value: " << i_ * integral << std::endl;
-
     prev_t = stamp;
     prev_e = error;
     return out;
@@ -61,7 +59,6 @@ std::vector<tf2::Transform> controller::discretizePath(std::vector<tf2::Transfor
     std::vector<tf2::Transform> disc_path;
     disc_path.push_back(path.at(0));
 
-//    tf2::Vector3 last_dir;
     for(int i=0; i< (path.size()-1); i++){
         float current_d = dist;
         tf2::Vector3 t1p = path.at(i).getOrigin();
@@ -91,7 +88,6 @@ std::vector<tf2::Transform> controller::discretizePath(std::vector<tf2::Transfor
 std::vector<tf2::Transform> controller::transformPath(nav_msgs::Path &path, const std::string target_frame){
     std::vector<tf2::Transform> t_path;
     if(path.header.frame_id != target_frame){
-//        std::cout << "Transforming path to " << target_frame << std::endl;
 
         geometry_msgs::TransformStamped tf_msg;
         tf2::Stamped<tf2::Transform> transform;
@@ -127,7 +123,6 @@ void controller::receivePath(raiscar_msgs::ControllerPath new_path)
     // ROS_INFO("Received new path");
 
 
-    //vel_override_ = new_path.des_vel;
     if (new_path.path_segment.poses.size() > 0)
     {
         path_ = transformPath(new_path.path_segment, map_frame_id_);
@@ -139,10 +134,8 @@ void controller::receivePath(raiscar_msgs::ControllerPath new_path)
         path_ = std::vector<tf2::Transform>();
         goal_reached_ = true;
         completion_advertised_ = true;
-        // ROS_WARN_STREAM("Received empty path!");
     }
 
-//    path_ = discretizePath(path_, 0.5);
 }
 void controller::sub_stop(std_msgs::Bool msg)
 {
@@ -162,8 +155,6 @@ void controller::sub_overtake(std_msgs::Bool msg)
 
 void controller::sub_lidar(sensor_msgs::PointCloud2 data)
 {
-//    std::cout << "subscribed to lidar !!!" << std::endl;
-//    BOOST_FOREACH (const pcl::PointXYZ& pt, data)
 
     sensor_msgs::PointCloud out_pc;
     sensor_msgs::convertPointCloud2ToPointCloud(data, out_pc);
@@ -172,31 +163,21 @@ void controller::sub_lidar(sensor_msgs::PointCloud2 data)
     {
         geometry_msgs::Point32 point;
         point.z = out_pc.points[i].z ;
-//        std::cout<<"point z"<<point.z<<std::endl;
         if(out_pc.points[i].z > 2.9)
         {
             counter = counter + 1;
         }
-
-
-
-//        pcl::toROSMsg (*cloud, image_)
-//        pcl::
-
     }
-//    std::cout<<"counter"<<counter<<std::endl;
 
 
 
 }
-//HERE
 void controller::sub_HLC (freicar_common::FreiCarControl msg)
 {
     HLC_msg.command = msg.command;
     HLC_msg.name = msg.name;
     HLC_bool = true;
 }
-//STOP HERE
 /*
  * Virtual function that needs to be reimplemented
  */
@@ -239,9 +220,7 @@ controller::controller():pos_tol_(0.1), idx_(0),
     min_depth_ = nh_.subscribe("min_depth", 1, &controller::min_depth,this);
     sub_lidar_ = nh_.subscribe("freicar_1/sim/lidar", 1, &controller::sub_lidar,this);
     sub_overtake_ = nh_.subscribe("/overtake", 1000, &controller::sub_overtake,this);
-    //HERE
     sub_hlc_ = nh_.subscribe("/overtake", 1000, &controller::sub_overtake,this);
-    //STOP HERE
 //    ros::Subscriber sub3 = node_handle->subscribe("car_localization", 1, callback_car_localization);
     // Publishers for the control command and the "reached" message
     pub_acker_ = nh_.advertise<raiscar_msgs::ControlCommand>("control", 1);
