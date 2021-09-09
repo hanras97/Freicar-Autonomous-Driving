@@ -91,13 +91,13 @@ public:
     bool overtake;
     bool flag=true;
     int i,mini=0;
-    //HERE
+    
     bool HLC_bool;
     float min_depth_dist;
     std::string car_name;
 
     freicar_common::FreiCarControl HLC_msg;
-    //STOP HERE
+    
 
     // Ros infrastructure
     ros::NodeHandle nh_, nh_private_;
