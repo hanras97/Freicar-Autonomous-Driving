@@ -76,6 +76,7 @@ add_library(ros_map
     src/ros_vis.cpp
     src/particle_filter.cpp
     src/map_helper.cpp
+    src/quaternion_average.h
 )
 # Eigen3::Eigen removed from libs
 target_link_libraries(ros_map
@@ -88,7 +89,7 @@ target_link_libraries(ros_map
 )
 
 
-add_executable(${PROJECT_NAME}_node src/ros_pf_localization.cpp/particle_filter.cpp))
+add_executable(${PROJECT_NAME}_node src/ros_pf_localization.cpp src/particle_filter.cpp))
 
 add_dependencies(${PROJECT_NAME}_node ${catkin_EXPORTED_TARGETS})
 
