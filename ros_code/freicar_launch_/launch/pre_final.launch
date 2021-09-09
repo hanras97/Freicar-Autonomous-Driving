@@ -16,7 +16,7 @@
 <include file="$(find timed_roslaunch)/launch/timed_roslaunch.launch">
     <arg name="time" value="2" />
     <arg name="pkg" value="freicar_agent" />
-    <arg name="file" value="spawn_car.launch" />
+    <arg name="file" value="sim_agent.launch" />
     <arg name="value" value="name:=$(arg name1) tf_name:=$(arg tf_name_1) spawn/x:=$(arg spawn/x1) spawn/y:=$(arg spawn/y1) spawn/z:=$(arg spawn/z1) spawn/heading:=$(arg spawn/heading1) use_yaml_spawn:=$(arg use_yaml_spawn1) sync_topic:=!" />
     <arg name="node_name" value="timed_roslaunch1" /> 
   </include>
