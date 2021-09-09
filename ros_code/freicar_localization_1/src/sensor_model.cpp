@@ -4,6 +4,9 @@
  * Do NOT distribute this code to anyone outside the FreiCAR project
  */
 
+
+/* Reference: https://github.com/Qanadilo1/speed_racers_comp_test/freicar_localization_sr/src/sensor_model.cpp */
+
 #include "sensor_model.h"
 
 std::unordered_set<int> pickSet(int N, int k, std::mt19937& gen)
