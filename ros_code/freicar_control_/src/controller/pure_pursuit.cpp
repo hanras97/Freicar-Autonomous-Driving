@@ -10,6 +10,8 @@
    Sorniotti et al. Path tracking for Automated Driving, 2017.
  */
 
+/* Reference: https://github.com/Qanadilo1/speed_racers_comp_test/freicar_control_sr/src/controller/pure_pursuit.cpp */
+
 #include <string>
 #include <cmath>
 #include <algorithm>
@@ -54,7 +56,7 @@ private:
     void controller_step(nav_msgs::Odometry odom);
     double ld_dist_;
     int index = 1 ;
-    double sum_pos_error = 0;  //sg1
+    double sum_pos_error = 0;  
     double mean_pos_error = 0;
     const char *path="/home/freicar/freicar_ws/src/freicar-2020-exercises/04-01-control-exercise/freicar_control/position_error.txt";
 };
@@ -75,7 +77,7 @@ PurePursuit::PurePursuit()
  * the pub_acker_ publisher.
  */
 
-//sg1 - Distance for error calculation
+//Distance for error calculation
 float PurePursuit::distance(float x2, float y2, float z2, float x1, float y1, float z1)
 {
     return sqrt(pow(x2 -x1,2) + pow(y2 - y1,2) + pow(z2 - z1,2));
@@ -131,7 +133,7 @@ void PurePursuit::controller_step(nav_msgs::Odometry odom)
             float pid_vel_out = 0.0;
             if (des_v_ >= 0) {
                 pid_vel_out = vel_pid.step((des_v_ - odom.twist.twist.linear.x), ros::Time::now());
-                //std::cout << "throttle" << pid_vel_out << std::endl;
+                
             } else {
                 pid_vel_out = des_v_;
 
@@ -143,7 +145,7 @@ void PurePursuit::controller_step(nav_msgs::Odometry odom)
             cmd_control_.throttle_mode = 0;
             cmd_control_.throttle = std::min(cmd_control_.throttle, 0.08f);
             cmd_control_.throttle = std::max(std::min((double) cmd_control_.throttle, 1.0), 0.0);
-//            std::cout << "throttle" << cmd_control_.throttle << std::endl;
+
             pub_acker_.publish(cmd_control_);
 
             if(stop_sign == true){
@@ -182,23 +184,16 @@ void PurePursuit::controller_step(nav_msgs::Odometry odom)
                 index = 0;
 
             }
-            //HERE
+            
             if (HLC_msg.name == "freicar_1"){
                 index = 0;
             }
-            //HERE
-//             else {
-//                 cmd_control_.steering =steering_angle / (70.0 * M_PI / 180.0); //  DUMMY_STEERING_ANGLE should be a value in degree
-//                 cmd_control_.throttle = 0.1;
-//                 cmd_control_.throttle_mode = 0;
-//                 pub_acker_.publish(cmd_control_);
-//             }
-//            pub_acker_.publish(cmd_control_);
+            
             float pos_error_x = path_[index].getOrigin().x() - map_t_fa.getOrigin().x();
             float pos_error_y = path_[index].getOrigin().y() - map_t_fa.getOrigin().y();
 
             float pos_error = 0;
-            //sg1 Calculate pos_error and moving mean over time as idx increase (i.e mean position error over time)
+            //Calculate pos_error and moving mean over time as idx increase (i.e mean position error over time)
             //pos_error = distance(path_[index].getOrigin().x(),path_[index].getOrigin().y(),path_[index].getOrigin().z(),
             //                   map_t_fa.getOrigin().x(),map_t_fa.getOrigin().y(), map_t_fa.getOrigin().z());
             pos_error = fabs(sin(alpha) * ld_dist_);
@@ -207,7 +202,7 @@ void PurePursuit::controller_step(nav_msgs::Odometry odom)
 
                 sum_pos_error = sum_pos_error + pos_error;
                 mean_pos_error = sum_pos_error / index;
-//                std::cout << "pos_error ist " << pos_error << "at time " << index << std::endl;
+
                 std::fstream file;
                 file.open(path, std::fstream::app);
                 if (!file.is_open()) {
