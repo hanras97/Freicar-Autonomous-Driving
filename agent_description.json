@@ -1,6 +1,6 @@
 {
-    "agent_name": "deploy_teamname",
-    "url": "https://aisgit.informatik.uni-freiburg.de/vertensj/freicar_demo_submission.git",
+    "agent_name": "tweak_titans",
+    "url": "https://github.com/hanras97/tweak_titans.git",
     "capabilities": ["simulated", "real"],
     "parameters": [
     ]
