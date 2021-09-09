@@ -1,10 +1,7 @@
 #include "freicar_map/thrift_map_proxy.h"
 #include "freicar_map/planning/lane_follower.h"
 #include "freicar_map/planning/lane_star.h"
-
-//Added by us
 #include "freicar_map/logic/right_of_way.h"
-//Added by us
 
 #include "map_core/freicar_map_helper.h"
 #include "map_core/freicar_map_config.h"
@@ -83,7 +80,7 @@ bool HandleWayPointRequest(freicar_common::WayPointRequest &req, freicar_common:
     }
     return plan.success;
 }
-//void PublishStop ( , ros::Publisher& pub)
+
 /* debugging function to publish plans (either from the lane_star or lane_follower planners) */
 void PublishPlan (freicar::planning::Plan& plan, double r, double g, double b, int id, const std::string& name, ros::Publisher& pub) {
     visualization_msgs::MarkerArray list;
@@ -146,21 +143,11 @@ void callback_car_localization (freicar_common::FreiCarAgentLocalization msg)
 
 void callback_car_bestpart (geometry_msgs::PoseArray msg)
 {
-//    return msg;
-//
+
     if(!msg.poses.empty()){
         p_current.SetX(msg.poses.at(0).position.x);
         p_current.SetY(msg.poses.at(0).position.y);
     }
-
-
-
-//    auto p_closest = freicar::mapobjects::FindClosestLanePoints(p_current.x(),
-//                                                        p_current.y(),
-//                                                        p_current.z(),
-//                                                        1)[0].first;
-//    current_lane = msg.FindLaneByUuid(p_closest.GetLaneUuid());
-
 }
 
 void callback_HLC (freicar_common::FreiCarControl msg)
@@ -172,17 +159,12 @@ void callback_HLC (freicar_common::FreiCarControl msg)
 
 void callback_goal_reached (std_msgs::Bool msg)
 {
-//    return msg;
-
-    //       bool goal_bool2 = true;
     if (msg.data == true)
     {
         goal_bool.data = true;
-//        std::cout<<"Goal REACHED"<<std::endl;
     }
     else
     {
-//        std::cout<<"Goal is not REACHED"<<std::endl;
         goal_bool.data = false;
     }
 
@@ -192,16 +174,9 @@ int main(int argc, char **argv)
 {
     ros::init(argc, argv, "map_framework");
     std::shared_ptr<ros::NodeHandle> node_handle = std::make_shared<ros::NodeHandle>();
-//    ros::NodeHandle n;
-//    goal_reached=  n.subscribe("freicar_1/goal_reached", 1, callback_goal_reached);
+
+
     ROS_INFO("map framework node started...");
-
-//    goal_reached = node_handle->subscribe("freicar_1/goal_reached", 1, callback_goal_reached,);
-
-
-
-
-//    ros::Subscriber sub = node_handle->subscribe("freicar_1/goal_reached", 1, callback_goal_reached);
 
 
     // starting map proxy
@@ -267,7 +242,6 @@ int main(int argc, char **argv)
             std::shared_ptr<ros::NodeHandle> node_handle1 = std::make_shared<ros::NodeHandle>();
             node_handle1->getParam("carname", car_name);
 
-//            ros::Subscriber sub3 = node_handle->subscribe("car_localization", 1, callback_car_localization);
             ros::Subscriber sub4 = node_handle->subscribe("best_particle", 1, callback_car_bestpart);
             ros::Subscriber sub = node_handle->subscribe(car_name+"/goal_reached", 1, callback_goal_reached);
             ros::Subscriber HL_sub = node_handle->subscribe("/freicar_commands", 1, callback_HLC);
@@ -347,7 +321,6 @@ int main(int argc, char **argv)
                 junction_flag.data = false;
                 jun_pub.publish(junction_flag);
 //                junction_arrived = true;
-                //std::cout << " junction_lrs" <<  junction_left << junction_right << junction_straight <<std::endl;
                 std::cout << "on a lane that leads to a junction" << std::endl;
 
             } else {
@@ -379,35 +352,22 @@ int main(int argc, char **argv)
             {
                 flag_1 = 0;
                 std::cout<<"Path set first time"<<std::endl;
-//                auto plan1 = freicar::planning::lane_follower::GetPlan(Point3D(10.866, 7.49 , 0.0), freicar::enums::STRAIGHT, 10,20);
-
                 auto plan1 = freicar::planning::lane_follower::GetPlan(Point3D(1.5, 0 , 0), freicar::enums::PlannerCommand{HLC_enum}, 10,20);
-////
-                //auto plan1 = freicar::planning::lane_follower::GetPlan(Point3D(1.5, 0.0 , 0.0), freicar::enums::LEFT, 10,20);
-                //auto plan1 = freicar::planning::lane_follower::GetPlan(Point3D(1.5, 0.0 , 0.0), freicar::enums::PlannerCommand{HLC_enum}, 10,20);
                 PublishPlan(plan1, 1.0, 0.1, 0.4, 300, "plan_1", tf);
 
 
             }
             if(goal_bool.data == true || (HLC_bool && junction_arrived )) {
-//                std::cout<<"goal rached ?"<< goal_bool.data<<std::endl;
-
                 std::cout<<"HOW MANY TIMES IS THIS CALLED ?"<<std::endl;
 
                 auto plan = freicar::planning::lane_follower::GetPlan(Point3D(p_current.x(), p_current.y() , 0), freicar::enums::PlannerCommand{HLC_enum}, 10,20); //TODO
                 PublishPlan(plan, 1.0, 0.1, 0.4, 300, "plan_1", tf);
-
-//                auto plan2 = freicar::planning::lane_follower::GetPlan(Point3D(plan[plan.size()-1].position.x(), plan[plan.size()-1].position.y() , plan[plan.size()-1].position.z()), freicar::enums::STRAIGHT, 10,40);
-//
-//                PublishPlan(plan2, 1.0, 0.1, 0.4, 300, "plan_2", tf);
 
                 HLC_bool = false;
                 junction_arrived = false;
             }
 
 
-            //PublishPlan(plan2, 0.5, 0.7, 0.1, 300, "plan_2", tf);
-            // ROS_INFO("visualized map");
 
             std::this_thread::sleep_for(1s);
             freicar::logic::JunctionAgent::Intent{0};
