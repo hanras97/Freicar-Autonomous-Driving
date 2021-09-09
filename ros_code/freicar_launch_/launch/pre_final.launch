@@ -22,7 +22,7 @@
 
 <include file="$(find timed_roslaunch)/launch/timed_roslaunch.launch">
     <arg name="time" value="10" />
-    <arg name="pkg" value="freicar_localization_" />
+    <arg name="pkg" value="freicar_localization_1" />
     <arg name="file" value="localization.launch" />
     <arg name="value" value="" />
     <arg name="node_name" value="timed_roslaunch2" /> 
