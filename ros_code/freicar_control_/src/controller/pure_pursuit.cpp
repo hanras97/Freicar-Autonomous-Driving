@@ -58,7 +58,6 @@ private:
     int index = 1 ;
     double sum_pos_error = 0;  
     double mean_pos_error = 0;
-    const char *path="/home/freicar/freicar_ws/src/freicar-2020-exercises/04-01-control-exercise/freicar_control/position_error.txt";
 };
 
 
