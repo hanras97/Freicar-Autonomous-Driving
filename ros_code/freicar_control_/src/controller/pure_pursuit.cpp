@@ -64,7 +64,7 @@ private:
 PurePursuit::PurePursuit()
 {
     // Get parameters from the parameter server
-    nh_private_.param<double>("lookahead_dist", ld_dist_, 0.7);
+    nh_private_.param<double>("lookahead_dist", ld_dist_, 0.8);
     std::cout << "Pure Pursuit controller started..." << std::endl;
 
 }
@@ -141,7 +141,7 @@ void PurePursuit::controller_step(nav_msgs::Odometry odom)
             cmd_control_.steering =steering_angle / (70.0 * M_PI / 180.0); //  DUMMY_STEERING_ANGLE should be a value in degree
             cmd_control_.throttle = des_v_;
             cmd_control_.throttle_mode = 0;
-            cmd_control_.throttle = std::min(cmd_control_.throttle, 0.11f);
+            cmd_control_.throttle = std::min(cmd_control_.throttle, 0.10f);
             cmd_control_.throttle = std::max(std::min((double) cmd_control_.throttle, 1.0), 0.0);
 //            std::cout << "throttle" << cmd_control_.throttle << std::endl;
             pub_acker_.publish(cmd_control_);
