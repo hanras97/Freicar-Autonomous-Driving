@@ -57,7 +57,7 @@ bool junction_arrived;
 auto& map_instance = freicar::map::Map::GetInstance();
 
 
-int flag_1=1;
+int flag_1;
 static geometry_msgs::Point ToGeometryPoint(const freicar::mapobjects::Point3D& pt) {
     geometry_msgs::Point rt;
     rt.x = pt.x();
@@ -257,7 +257,7 @@ int main(int argc, char **argv)
             if(HLC_msg.command == "start" )
             {
                 HLC_enum = 3;
-                //flag_1=1;
+                flag_1=1;
             }
 
             else if (HLC_msg.command == "straight")
