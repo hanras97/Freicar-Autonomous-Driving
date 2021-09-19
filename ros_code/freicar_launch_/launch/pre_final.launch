@@ -9,9 +9,6 @@
 <arg name="spawn/heading1" default="20"/>
 <arg name="use_yaml_spawn1" default="true"/>
 
-
-<node pkg="freicar_map_" type="freicar_map__node" name="freicar_map_" launch-prefix="bash -c 'sleep 31.1; $0 $@' ">
-  </node>
   
 <include file="$(find timed_roslaunch)/launch/timed_roslaunch.launch">
     <arg name="time" value="2" />
