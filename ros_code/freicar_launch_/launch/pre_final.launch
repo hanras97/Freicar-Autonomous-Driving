@@ -19,7 +19,7 @@
   </include>
 
 <include file="$(find timed_roslaunch)/launch/timed_roslaunch.launch">
-    <arg name="time" value="10" />
+    <arg name="time" value="5" />
     <arg name="pkg" value="freicar_localization_1" />
     <arg name="file" value="localization.launch" />
     <arg name="value" value="" />
@@ -27,7 +27,7 @@
   </include>
 
 <include file="$(find timed_roslaunch)/launch/timed_roslaunch.launch">
-    <arg name="time" value="20" />
+    <arg name="time" value="12" />
     <arg name="pkg" value="freicar_control_" />
     <arg name="file" value="start_controller.launch" />
     <arg name="value" value="name:=$(arg name1) tf_name:=$(arg tf_name_1)" />
@@ -35,7 +35,7 @@
   </include>
 
 <include file="$(find timed_roslaunch)/launch/timed_roslaunch.launch">
-    <arg name="time" value="25" />
+    <arg name="time" value="15" />
     <arg name="pkg" value="freicar_planner_" />
     <arg name="file" value="planning.launch" />
     <arg name="value" value="" />
