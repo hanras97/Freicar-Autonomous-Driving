@@ -163,14 +163,14 @@ void Localizer::OdoCallback(const nav_msgs::OdometryConstPtr &msg) {
     visualizer_->SendBestParticle(best_particle, "map");
     last_odo_update_ = msg->header.stamp;
 
-    if (evaluate_ && first_observation_received_) {
-        Eigen::Transform<float, 3, Eigen::Affine> gt_pose = this->GetTf(ros::Time(0));
-	Eigen::Vector3f particle_pos = Eigen::Vector3f(best_particle.transform.translation().x(), best_particle.transform.translation().y(), 0.);
-        float position_error = std::sqrt((gt_pose.translation() - particle_pos).squaredNorm());
-        aggregated_error_ += position_error;
-        num_measurements_++;
-        std::cout << "Position error [m]: " << position_error << std::endl;
-    }
+//     if (evaluate_ && first_observation_received_) {
+//         Eigen::Transform<float, 3, Eigen::Affine> gt_pose = this->GetTf(ros::Time(0));
+// 	Eigen::Vector3f particle_pos = Eigen::Vector3f(best_particle.transform.translation().x(), best_particle.transform.translation().y(), 0.);
+//         float position_error = std::sqrt((gt_pose.translation() - particle_pos).squaredNorm());
+//         aggregated_error_ += position_error;
+//         num_measurements_++;
+//         std::cout << "Position error [m]: " << position_error << std::endl;
+//     }
 }
 
 /*
