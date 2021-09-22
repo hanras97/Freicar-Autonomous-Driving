@@ -403,10 +403,12 @@ std::vector<Sign> particle_filter::transformSignsToCarBaseLink(const std::vector
     static tf::StampedTransform c_t_b;
 
     static tf::TransformListener listener;
+    std::shared_ptr<ros::NodeHandle> node_handle = std::make_shared<ros::NodeHandle>();
+    node_handle->getParam("carname", car_name);
 
     if(!initialized){
         try{
-            listener.lookupTransform("freicar_1/base_link", "freicar_1/zed_camera",
+            listener.lookupTransform(car_name+"/base_link", car_name+"/zed_camera",
                                      ros::Time(0), c_t_b);
             initialized = true;
         }
