@@ -80,23 +80,23 @@ Localizer::Localizer(std::shared_ptr<ros::NodeHandle> n) : n_(n), it_(*n) {
  * Receives /base_link relative to /map as Eigen transformation matrix.
  * WARNING, IMPORTANT: This is ground truth, so don't use it anywhere in the particle filter. This is just for reference
  */
-Eigen::Transform<float, 3, Eigen::Affine> Localizer::GetTf(ros::Time time) {
-    Eigen::Transform<float, 3, Eigen::Affine> gt_t = Eigen::Transform<float, 3, Eigen::Affine>::Identity();
-    tf::StampedTransform transform;
-    try {
-        listener.lookupTransform("/map", "/freicar_1/base_link",
-                                 time, transform);
-    }
-    catch (tf::TransformException ex) {
-        ROS_ERROR("%s", ex.what());
-        ros::Duration(1.0).sleep();
-    }
+// Eigen::Transform<float, 3, Eigen::Affine> Localizer::GetTf(ros::Time time) {
+//     Eigen::Transform<float, 3, Eigen::Affine> gt_t = Eigen::Transform<float, 3, Eigen::Affine>::Identity();
+//     tf::StampedTransform transform;
+//     try {
+//         listener.lookupTransform("/map", "/freicar_1/base_link",
+//                                  time, transform);
+//     }
+//     catch (tf::TransformException ex) {
+//         ROS_ERROR("%s", ex.what());
+//         ros::Duration(1.0).sleep();
+//     }
 
-    gt_t.translate(Eigen::Vector3f(transform.getOrigin().x(), transform.getOrigin().y(), 0.));
-    gt_t.rotate(Eigen::Quaternionf(transform.getRotation().getW(), transform.getRotation().getX(),
-                                   transform.getRotation().getY(), transform.getRotation().getZ()));
-    return gt_t;
-}
+//     gt_t.translate(Eigen::Vector3f(transform.getOrigin().x(), transform.getOrigin().y(), 0.));
+//     gt_t.rotate(Eigen::Quaternionf(transform.getRotation().getW(), transform.getRotation().getX(),
+//                                    transform.getRotation().getY(), transform.getRotation().getZ()));
+//     return gt_t;
+// }
 
 //// Destructor
 Localizer::~Localizer(){
@@ -141,24 +141,24 @@ void Localizer::OdoCallback(const nav_msgs::OdometryConstPtr &msg) {
     //visualizer_->SendBestParticle(p_filter->getBestParticle(), "/map");
     Particle best_particle = p_filter->getMeanParticle(100);
 
-//    geometry_msgs::TransformStamped transformStamped;
-//    transformStamped.header.stamp = ros::Time::now();
-//    transformStamped.header.frame_id = "map";
-//    transformStamped.child_frame_id = car_name+"/handle";
-//    transformStamped.transform.translation.x = best_particle.transform.translation().x();
-//    transformStamped.transform.translation.y = best_particle.transform.translation().y();
-//    transformStamped.transform.translation.z = best_particle.transform.translation().z();
-//
-//
-////    ROS_INFO("Broadcaster done");
-//
-//    Eigen::Quaternionf q(best_particle.transform.rotation().matrix());
-//
-//    transformStamped.transform.rotation.x = q.y();
-//    transformStamped.transform.rotation.y = q.x();
-//    transformStamped.transform.rotation.z = q.z();
-//    transformStamped.transform.rotation.w = q.w();
-//    broadcaster.sendTransform(transformStamped);
+   geometry_msgs::TransformStamped transformStamped;
+   transformStamped.header.stamp = ros::Time::now();
+   transformStamped.header.frame_id = "map";
+   transformStamped.child_frame_id = car_name+"/handle";
+   transformStamped.transform.translation.x = best_particle.transform.translation().x();
+   transformStamped.transform.translation.y = best_particle.transform.translation().y();
+   transformStamped.transform.translation.z = best_particle.transform.translation().z();
+
+
+//    ROS_INFO("Broadcaster done");
+
+   Eigen::Quaternionf q(best_particle.transform.rotation().matrix());
+
+   transformStamped.transform.rotation.x = q.y();
+   transformStamped.transform.rotation.y = q.x();
+   transformStamped.transform.rotation.z = q.z();
+   transformStamped.transform.rotation.w = q.w();
+   broadcaster.sendTransform(transformStamped);
 
     visualizer_->SendBestParticle(best_particle, "map");
     last_odo_update_ = msg->header.stamp;
