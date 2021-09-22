@@ -133,11 +133,17 @@ void particle_filter::InitParticles(){
         Particle p;
         p.weight = 1.0;
         Eigen::Transform<float,3,Eigen::Affine> t = Eigen::Transform<float,3,Eigen::Affine>::Identity();
-
+        std::float_t spawn_x=0, spawn_y=0, spawn_z=0, spawn_heading=0;
+        std::shared_ptr<ros::NodeHandle> node_handle2 = std::make_shared<ros::NodeHandle>();
+        node_handle2->getParam("carname", car_name);
+        node_handle2->getParam("/freicar_"+car_name+"_carla_proxy/spawn/x", spawn_x);
+        node_handle2->getParam("freicar_"+car_name+"_carla_proxy/spawn/y", spawn_y);
+        node_handle2->getParam("/freicar_"+car_name+"_carla_proxy/spawn/z", spawn_z);
+        node_handle2->getParam("/freicar_"+car_name+"_carla_proxy/spawn/heading", spawn_heading);
         //float yaw = dist_rot(generator_);
         // float yaw = 180;
 
-        float yaw = 0.0;
+        float yaw = spawn_heading;
         Eigen::Quaternionf rot;
 
         rot = Eigen::AngleAxisf(0.0, Eigen::Vector3f::UnitX())
@@ -146,7 +152,7 @@ void particle_filter::InitParticles(){
 
         //Eigen::Vector3f add_t(dist_x(generator_), dist_y(generator_), 0.0f);    //Random poses
         //Eigen::Vector3f add_t(0.43812, 0.818663, 0.0f);     //Our spawn position
-        Eigen::Vector3f add_t(1.5, 0.0, 0.0f);     //Given spawn position in /freicar_launch
+        Eigen::Vector3f add_t(spawn_x, spawn_y, 0.0f);     //Given spawn position in /freicar_launch
         t.translate(add_t);
         t.rotate(rot);
         p.transform = t;
