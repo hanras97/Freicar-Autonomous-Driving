@@ -143,7 +143,7 @@ void PurePursuit::controller_step(nav_msgs::Odometry odom)
 //            }
             else
             {
-                cmd_control_.throttle = 0.1;
+                cmd_control_.throttle = 0.08;
             }
             cmd_control_.throttle_mode = 0;
 //            cmd_control_.throttle = std::min(cmd_control_.throttle, 0.10f);
@@ -163,6 +163,18 @@ void PurePursuit::controller_step(nav_msgs::Odometry odom)
                 std::cout<< "i woke up " << std::endl;
                 std::cout<< "START AGAIN " << cmd_control_.throttle << std::endl;
                 pub_acker_.publish(cmd_control_);
+            }
+            if(overtake == true){
+                std::cout<< "starting overtake" << std::endl;
+                cmd_control_.throttle = -0.1;
+                cmd_control_.steering = 0;
+                pub_acker_.publish(cmd_control_);
+                ros::Duration(0.50).sleep();
+                cmd_control_.throttle = 0.06;
+                cmd_control_.steering = steering_angle / (70.0 * M_PI / 180.0);
+                pub_acker_.publish(cmd_control_);
+                index = 0;
+
             }
 //             else {
 //                 cmd_control_.steering =steering_angle / (70.0 * M_PI / 180.0); //  DUMMY_STEERING_ANGLE should be a value in degree
