@@ -8,7 +8,7 @@ import torch
 import yaml
 import sys
 
-sys.path.insert(0,'/home/freicar/freicar_ws/src/freicar_object_bb/src/')
+sys.path.insert(0,'/home/freicar/freicar_ws/src/ros_code/freicar_object_bb/src/')
 from model.efficientdet.backbone import EfficientDetBackbone
 from model.efficientdet.utils import BBoxTransform, ClipBoxes
 from utils import postprocess, boolean_string
@@ -31,9 +31,9 @@ gpu = 0
 
 
 project_name = 'freicar-detection'
-weights_path = '/home/freicar/freicar_ws/src/freicar_object_bb/src/logs/freicar-detection/efficientdet-d0_99_109100.pth'
+weights_path = '/home/freicar/freicar_ws/src/ros_code/freicar_object_bb/src/logs/freicar-detection/efficientdet-d0_99_109100.pth'
 import os, sys
-here = os.path.dirname(os.path.abspath('/home/freicar/freicar_ws/src/freicar_object_bb/src/projects/'))
+here = os.path.dirname(os.path.abspath('/home/freicar/freicar_ws/src/ros_code/freicar_object_bb/src/projects/'))
 sys.path.append(here)
 
 filename = os.path.join(here, "projects/freicar-detection.yml")
