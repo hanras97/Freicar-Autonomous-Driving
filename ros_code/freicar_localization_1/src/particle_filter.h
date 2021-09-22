@@ -32,7 +32,7 @@
 
 #define NUM_PARTICLES 5000
 #define BEST_PARTICLE_HISTORY 20
-#define QUALITY_RELOC_THRESH 0.4
+#define QUALITY_RELOC_THRESH 0.8
 using namespace std::chrono;
 
 class particle_filter
