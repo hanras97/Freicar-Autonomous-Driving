@@ -3,13 +3,10 @@
  * Project: FreiCAR
  * Do NOT distribute this code to anyone outside the FreiCAR project
  */
-
+#include <Eigen/StdVector>
 #include <map_core/freicar_map.h>
 #include "particle_filter.h"
-#include <ros/ros.h>
 #include "quaternion_average.h"
-#include "yaml-cpp/yaml.h"
-#include <Eigen/StdVector>
 
 particle_filter::particle_filter(freicar::map::Map* map, std::shared_ptr<ros_vis> vis, bool use_lane_reg): visualizer_(vis)
 {
@@ -86,37 +83,24 @@ void particle_filter::LowVarianceSampling(){
     std::uniform_real_distribution<float> entry(0, 1);
     std::random_device rd;
     std::mt19937 gen(rd());
-    r = (entry(gen)*total_weight);
+    double r = (entry(gen)*total_weight);
     std::vector<Particle> resampled;
-    c = particles_[0].weight;
-    u = r;
-    s = total_weight/NUM_PARTICLES;
-    j = 0;
-    //std::cout << "" <<  << std::endl;
+    double c = particles_[0].weight;
+    double u = r;
+    double s = total_weight/NUM_PARTICLES;
+    double j = 0;
     for (int i = 0; i < NUM_PARTICLES; i++ ) {
-        //u = r + (float)i / NUM_PARTICLES;
         u = u + s;
-        //std::cout << "BEFORE u-------------------------------------------" << u << std::endl;
-        //std::cout << "BEFORE j" << j << std::endl;
-        while(u > c){//} && j<NUM_PARTICLES) {
-            //std::cout << "WHILE total_weight" << total_weight << std::endl;
+        while(u > c){
             j = j + 1;
-            //std::cout << "WHILE j" << j << std::endl;
             c = c + particles_[j].weight;
-            //std::cout << "WHILE c" << c << std::endl;
             if(u > total_weight){
                 j = 0;
-                //std::cout << "IF j" << j << std::endl;
                 u = u - total_weight;
-                //std::cout << "IF u" << u << std::endl;
-                c= particles_[0].weight;
-                //std::cout << "IF c" << c << std::endl;
+                c = particles_[0].weight;
             }
         }
-        //std::cout << "AFTER j" << j << std::endl;
         resampled.push_back(particles_[j]);
-        //std::cout << "AFTER r" << r << std::endl;
-        //std::cout << "AFTER rrr" << rrr << std::endl;
     }
     particles_ = resampled;
 }
@@ -132,16 +116,16 @@ void particle_filter::LowVarianceSampling(){
 void particle_filter::InitParticles(){
     memory_init_ = false;
     memory_insert_cnt_ = 0;
-    if (!particles_.empty()) {
+
+    if(!particles_.empty()){
         std::cout << "Particles are not empty... clearing..." << std::endl;
         particles_.clear();
     }
+
     Eigen::Vector4f maxes_mins = map_helper::getMaxesMap(map_);
-    std::cout << "Map extrema: Min_x: " << maxes_mins[0] << " Max_x: " << maxes_mins[1] << " Min_y: " << maxes_mins[2]
-              << " Max_y: " << maxes_mins[3] << std::endl;
+    std::cout << "Map extrema: Min_x: " << maxes_mins[0] << " Max_x: " << maxes_mins[1] << " Min_y: " << maxes_mins[2] << " Max_y: " << maxes_mins[3] << std::endl;
 
     //Keep above code, and implement under this block! /////////////////////////////////////////////////////////////////
-
     std::uniform_real_distribution<float> dist_x(maxes_mins[0], maxes_mins[1]);
     std::uniform_real_distribution<float> dist_y(maxes_mins[2], maxes_mins[3]);
     std::uniform_real_distribution<float> dist_rot(0, 2*M_PI);
@@ -149,39 +133,35 @@ void particle_filter::InitParticles(){
         Particle p;
         p.weight = 1.0;
         Eigen::Transform<float,3,Eigen::Affine> t = Eigen::Transform<float,3,Eigen::Affine>::Identity();
-//TODO Change the intial orientation
 
-        std::float_t spawn_x=0, spawn_y=0, spawn_z=0, spawn_heading=0;
-        std::shared_ptr<ros::NodeHandle> node_handle2 = std::make_shared<ros::NodeHandle>();
-        node_handle2->getParam("carname", car_name);
-        node_handle2->getParam("/freicar_"+car_name+"_carla_proxy/spawn/x", spawn_x);
-        node_handle2->getParam("freicar_"+car_name+"_carla_proxy/spawn/y", spawn_y);
-        node_handle2->getParam("/freicar_"+car_name+"_carla_proxy/spawn/z", spawn_z);
-        node_handle2->getParam("/freicar_"+car_name+"_carla_proxy/spawn/heading", spawn_heading);
-        float yaw = spawn_heading;
         //float yaw = dist_rot(generator_);
         // float yaw = 180;
 
-        //float yaw = 0.0;
+        float yaw = 0.0;
         Eigen::Quaternionf rot;
 
         rot = Eigen::AngleAxisf(0.0, Eigen::Vector3f::UnitX())
               * Eigen::AngleAxisf(0.0, Eigen::Vector3f::UnitY())
               * Eigen::AngleAxisf(yaw, Eigen::Vector3f::UnitZ());
 
-        Eigen::Vector3f add_t(spawn_x, spawn_y, 0.0f);
-        // Eigen::Vector3f add_t(10.866, 7.494, 0.0f);
-        //Eigen::Vector3f add_t(1.5, 0.0, 0.0f);
+        //Eigen::Vector3f add_t(dist_x(generator_), dist_y(generator_), 0.0f);    //Random poses
+        //Eigen::Vector3f add_t(0.43812, 0.818663, 0.0f);     //Our spawn position
+        Eigen::Vector3f add_t(1.5, 0.0, 0.0f);     //Given spawn position in /freicar_launch
         t.translate(add_t);
         t.rotate(rot);
         p.transform = t;
-
-
         particles_.push_back(p);
     }
 
 
     particles_init_ = true;
+
+    // DUMMY EXAMPLE FOR ONE PARTICLE::::
+//    Particle dummy;  // Just an example
+//    dummy.weight = 1.0;  // Just an example
+//    dummy.transform = Eigen::Transform<float,3,Eigen::Affine>::Identity(); // Just an example
+//    particles_.push_back(dummy);  // Just an example
+    // DUMMY EXAMPLE FOR ONE PARTICLE::::
 }
 
 float particle_filter::getSpread(){
@@ -264,9 +244,7 @@ Particle particle_filter::getMeanParticle(int k_mean){
     std::sort(reverse_particles.begin(), reverse_particles.end(), particleOrdering);
     std::reverse(reverse_particles.begin(), reverse_particles.end());
     Eigen::Transform<float,3,Eigen::Affine> out_t = Eigen::Transform<float,3,Eigen::Affine>::Identity();
-
-    Eigen::Matrix3f rotation_total ;
-
+    Eigen::Matrix3f rotation_tot;
     Eigen::Vector3f translation(0.0f, 0.0f, 0.0f);
     float avg_weight = 0.0;
     for(int i = 0; i < k_mean; i++){
@@ -276,7 +254,7 @@ Particle particle_filter::getMeanParticle(int k_mean){
         const float c_w = reverse_particles.at(i).weight;
         translation += reverse_particles.at(i).transform.translation();
         avg_weight += reverse_particles.at(i).weight;
-        rotation_total += reverse_particles.at(i).transform.rotation();
+        rotation_tot += reverse_particles.at(i).transform.rotation();
     }
 
     translation[0] = translation[0] / k_mean;
@@ -284,18 +262,20 @@ Particle particle_filter::getMeanParticle(int k_mean){
     translation[2] = 0.;
 
     Eigen::Matrix3f rotation_average ;
+
     for(int x=0; x<3; x++)
     {
         for(int y=0; y<3; y++)
         {
-            rotation_average(x,y) = rotation_total(x,y)/k_mean;
+            rotation_average(x,y) = rotation_tot(x,y) / k_mean;
 
         }
     }
+
     avg_weight = avg_weight / k_mean;
 
     out_t.translate(translation);
-    out_t.rotate(rotation_average);
+    out_t.rotate(rotation_average);;
 
     Particle out;
     out.weight = avg_weight;
@@ -327,13 +307,13 @@ Particle particle_filter::getBestParticle(){
  *
  * The particles that should be moved are stored in "particles_"
  */
-void particle_filter::ConstantVelMotionModel(nav_msgs::Odometry odometry, float time_step) {
+void particle_filter::ConstantVelMotionModel(nav_msgs::Odometry odometry, float time_step){
     // Definitions of standard deviations for vel_x, vel_y and yaw_rate
     std::normal_distribution<float> dist_yaw(0.0, 0.2);
     std::normal_distribution<float> dist_x(0.0, 0.1);
     std::normal_distribution<float> dist_y(0.0, 0.1);
 
-    if (particles_init_) {
+    if(particles_init_) {
         Particle temp_particles;
         // init particles_ vector with NUM_Particles
         for (int i = 0; i < NUM_PARTICLES; i++) {
@@ -341,23 +321,24 @@ void particle_filter::ConstantVelMotionModel(nav_msgs::Odometry odometry, float 
 
             rot = Eigen::AngleAxisf(0.0, Eigen::Vector3f::UnitX())
                   * Eigen::AngleAxisf(0.0, Eigen::Vector3f::UnitY())
-                  * Eigen::AngleAxisf((odometry.twist.twist.angular.z - dist_yaw(generator_)) * time_step,
-                                      Eigen::Vector3f::UnitZ());
+                  * Eigen::AngleAxisf((odometry.twist.twist.angular.z - dist_yaw(generator_)) * time_step, Eigen::Vector3f::UnitZ());
 
 
-            Eigen::Vector3f add_t((odometry.twist.twist.linear.x - dist_x(generator_)) * time_step,
-                                  (odometry.twist.twist.linear.y - dist_y(generator_)) * time_step,
+            Eigen::Vector3f add_t((odometry.twist.twist.linear.x - dist_x(generator_)) * time_step , (odometry.twist.twist.linear.y - dist_y(generator_))* time_step,
                                   0.0f);
 
             particles_[i].transform.translate(add_t);
             particles_[i].transform.rotate(rot);
-            // Note: the faster the car drives the higher the variances get (additive variance term proportional to the speed),
-            // so if you want to improve the motion model further you could take that into account
 
             // Sampling from these distributions can be done as follows: dist_yaw(generator_) -> samples from dist_yaw
-
         }
     }
+
+
+    // Note: the faster the car drives the higher the variances get (additive variance term proportional to the speed),
+    // so if you want to improve the motion model further you could take that into account
+
+    // Sampling from these distributions can be done as follows: dist_yaw(generator_) -> samples from dist_yaw
 }
 
 
@@ -416,11 +397,10 @@ std::vector<Sign> particle_filter::transformSignsToCarBaseLink(const std::vector
     static tf::StampedTransform c_t_b;
 
     static tf::TransformListener listener;
-    std::shared_ptr<ros::NodeHandle> node_handle = std::make_shared<ros::NodeHandle>();
-    node_handle->getParam("carname", car_name);
+
     if(!initialized){
         try{
-            listener.lookupTransform(car_name+"/base_link", car_name+"/zed_camera",
+            listener.lookupTransform("freicar_1/base_link", "freicar_1/zed_camera",
                                      ros::Time(0), c_t_b);
             initialized = true;
         }
@@ -500,9 +480,9 @@ bool particle_filter::ObservationStep(const std::vector<cv::Mat> reg, const std:
                     return true;
                 }
             }
-            // Resample new particles
+            // Resample new particles/
             LowVarianceSampling();
-//            RouletteSampling();
+            //RouletteSampling();
         }
     }
 
