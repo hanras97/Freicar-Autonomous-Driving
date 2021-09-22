@@ -25,21 +25,37 @@
     <arg name="value" value="" />
     <arg name="node_name" value="timed_roslaunch2" /> 
   </include>
-
+  
 <include file="$(find timed_roslaunch)/launch/timed_roslaunch.launch">
     <arg name="time" value="12" />
-    <arg name="pkg" value="freicar_control_" />
-    <arg name="file" value="start_controller.launch" />
+    <arg name="pkg" value="freicar_object_bb" />
+    <arg name="file" value="bounding_box.launch.launch" />
     <arg name="value" value="name:=$(arg name1) tf_name:=$(arg tf_name_1)" />
     <arg name="node_name" value="timed_roslaunch3" />
   </include>
+  
+  <include file="$(find timed_roslaunch)/launch/timed_roslaunch.launch">
+    <arg name="time" value="16" />
+    <arg name="pkg" value="freicar_overtake_" />
+    <arg name="file" value="depth.launch" />
+    <arg name="value" value="name:=$(arg name1) tf_name:=$(arg tf_name_1)" />
+    <arg name="node_name" value="timed_roslaunch4" />
+  </include>
+  
+<include file="$(find timed_roslaunch)/launch/timed_roslaunch.launch">
+    <arg name="time" value="20" />
+    <arg name="pkg" value="freicar_control_" />
+    <arg name="file" value="start_controller.launch" />
+    <arg name="value" value="name:=$(arg name1) tf_name:=$(arg tf_name_1)" />
+    <arg name="node_name" value="timed_roslaunch5" />
+  </include>
 
 <include file="$(find timed_roslaunch)/launch/timed_roslaunch.launch">
-    <arg name="time" value="15" />
+    <arg name="time" value="25" />
     <arg name="pkg" value="freicar_planner_" />
     <arg name="file" value="planning.launch" />
     <arg name="value" value="" />
-    <arg name="node_name" value="timed_roslaunch4" />
+    <arg name="node_name" value="timed_roslaunch6" />
   </include>
 
 </launch>
