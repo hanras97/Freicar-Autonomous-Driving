@@ -48,7 +48,7 @@ freicar::mapobjects::Point3D p_current;
 freicar::mapobjects::Lane *current_lane;
 ros::Publisher snm_pub;
 ros::Publisher jun_pub;
-freicar_common::FreiCarControl HLC_msg;
+    freicar_common::FreiCarControl HLC_msg;
 bool HLC_bool;
 bool junction_arrived;
 //freicar::mapobjects::Uuid uuid_;
@@ -57,7 +57,7 @@ bool junction_arrived;
 auto& map_instance = freicar::map::Map::GetInstance();
 
 
-int flag_1;
+int flag_1=1;
 static geometry_msgs::Point ToGeometryPoint(const freicar::mapobjects::Point3D& pt) {
     geometry_msgs::Point rt;
     rt.x = pt.x();
@@ -257,7 +257,7 @@ int main(int argc, char **argv)
             if(HLC_msg.command == "start" )
             {
                 HLC_enum = 3;
-                flag_1=1;
+                //flag_1=1;
             }
 
             else if (HLC_msg.command == "straight")
@@ -353,7 +353,7 @@ int main(int argc, char **argv)
             {
                 flag_1 = 0;
                 std::cout<<"Path set first time"<<std::endl;
-                auto plan1 = freicar::planning::lane_follower::GetPlan(Point3D(spawn_x, spawn_y , 0), freicar::enums::PlannerCommand{HLC_enum}, 10,40);
+                auto plan1 = freicar::planning::lane_follower::GetPlan(Point3D(spawn_x, spawn_y , 0), freicar::enums::PlannerCommand{HLC_enum}, 9,20);
                 PublishPlan(plan1, 1.0, 0.1, 0.4, 300, "plan_1", tf);
 
 
@@ -361,7 +361,7 @@ int main(int argc, char **argv)
             if(goal_bool.data == true || (HLC_bool && junction_arrived )) {
                 std::cout<<"HOW MANY TIMES IS THIS CALLED ?"<<std::endl;
 
-                auto plan = freicar::planning::lane_follower::GetPlan(Point3D(p_current.x(), p_current.y() , 0), freicar::enums::PlannerCommand{HLC_enum}, 10,40); //TODO
+                auto plan = freicar::planning::lane_follower::GetPlan(Point3D(p_current.x(), p_current.y() , 0), freicar::enums::PlannerCommand{HLC_enum}, 9,20); //TODO
                 PublishPlan(plan, 1.0, 0.1, 0.4, 300, "plan_1", tf);
 
                 HLC_bool = false;
