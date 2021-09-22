@@ -32,5 +32,5 @@ rosparam set sign_detector/agent_name $car_name
 
 # Your launch file goes here! Note: You can only start one launch file in this script. However you can include additional launch files in this launch file.
 # Make sure you consider the car_name and all spawn variables
-roslaunch freicar_launch_ pre_final.launch name:=$car_name tf_name:=$car_name spawn/x:=$x_spawn spawn/y:=$y_spawn spawn/z:=0 spawn/heading:=$yaw_spawn use_yaml_spawn:=$use_yaml_spawn sync_topic:=! ${add_commands# }
+roslaunch freicar_launch_ comp.launch name:=$car_name tf_name:=$car_name spawn/x:=$x_spawn spawn/y:=$y_spawn spawn/z:=0 spawn/heading:=$yaw_spawn use_yaml_spawn:=$use_yaml_spawn sync_topic:=! ${add_commands# }
 
