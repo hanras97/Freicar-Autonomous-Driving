@@ -13,4 +13,5 @@ yes | pip3 install webcolors
 yes | pip3 install visdom
 yes | pip3 install tqdm
 yes | pip3 install opencv-python
+yes | pip3 install torchvision
 # install anything...
