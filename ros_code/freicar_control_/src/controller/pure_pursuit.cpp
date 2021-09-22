@@ -56,7 +56,6 @@ private:
     int index = 0 ;
     double sum_pos_error = 0;  //sg1
     double mean_pos_error = 0;
-    const char *path="/home/freicar/freicar_ws/src/freicar-2020-exercises/04-01-control-exercise/freicar_control/position_error.txt";
 };
 
 
@@ -64,7 +63,7 @@ private:
 PurePursuit::PurePursuit()
 {
     // Get parameters from the parameter server
-    nh_private_.param<double>("lookahead_dist", ld_dist_, 0.76);
+    nh_private_.param<double>("lookahead_dist", ld_dist_, 0.6);
     std::cout << "Pure Pursuit controller started..." << std::endl;
 
 }
@@ -86,9 +85,11 @@ void PurePursuit::controller_step(nav_msgs::Odometry odom)
     try{
         geometry_msgs::TransformStamped tf_msg;
         geometry_msgs::TransformStamped front_axis_tf_msg;
+
         tf2::Stamped<tf2::Transform> map_t_fa;
         tf_msg = tf_buffer_.lookupTransform(map_frame_id_, rear_axis_frame_id_, ros::Time(0));
         front_axis_tf_msg = tf_buffer_.lookupTransform(map_frame_id_, front_axis_frame_id_, ros::Time(0));
+
         tf2::convert(tf_msg, map_t_fa);
 
         if(path_.size() > 0 && index < path_.size()-1)
@@ -125,16 +126,20 @@ void PurePursuit::controller_step(nav_msgs::Odometry odom)
             steering_angle = steering_angle / (70.0 * M_PI / 180.0);
             std::cout<<steering_angle<<std::endl;
             cmd_control_.steering = steering_angle;//  DUMMY_STEERING_ANGLE should be a value in degree
-            if(steering_angle < -0.4 || steering_angle > 0.4)
+            if(steering_angle < -0.3  || steering_angle > 0.3 )
             {
-//                if(steering_angle < -0.45 || steering_angle > 0.45){
-//                    cmd_control_.throttle_mode = 1;
-//                    cmd_control_.throttle = 0.05;
+
+                cmd_control_.throttle = 0.09;
+            }
+//            else if(steering_angle < -0.5 || steering_angle > 0.5){
+////                    cmd_control_.throttle_mode = 1;
+//                cmd_control_.throttle = -0.1;
+//                cmd_control_.brake = 1;
+//                ros::Duration(1).sleep();
+//
 //                    ros::Duration(1).sleep();
 //                    cmd_control_.throttle = 0.05;
-//                }
-                cmd_control_.throttle = 0.08;
-            }
+//            }
 //            else if(steering_angle < -0.4 || steering_angle > 0.4)
 //            {
 //                cmd_control_.brake = 1;
@@ -143,7 +148,7 @@ void PurePursuit::controller_step(nav_msgs::Odometry odom)
 //            }
             else
             {
-                cmd_control_.throttle = 0.08;
+                cmd_control_.throttle = 0.12;
             }
             cmd_control_.throttle_mode = 0;
 //            cmd_control_.throttle = std::min(cmd_control_.throttle, 0.10f);
@@ -158,23 +163,11 @@ void PurePursuit::controller_step(nav_msgs::Odometry odom)
                 pub_acker_.publish(cmd_control_);
                 std::cout<< "STOP IN CONTROLLER" << cmd_control_.throttle << std::endl;
                 ros::Duration(1).sleep();
-                cmd_control_.throttle = 0.1;
+                cmd_control_.throttle = 0.12;
                 cmd_control_.brake = 0;
                 std::cout<< "i woke up " << std::endl;
                 std::cout<< "START AGAIN " << cmd_control_.throttle << std::endl;
                 pub_acker_.publish(cmd_control_);
-            }
-            if(overtake == true){
-                std::cout<< "starting overtake" << std::endl;
-                cmd_control_.throttle = -0.1;
-                cmd_control_.steering = 0;
-                pub_acker_.publish(cmd_control_);
-                ros::Duration(0.50).sleep();
-                cmd_control_.throttle = 0.06;
-                cmd_control_.steering = steering_angle / (70.0 * M_PI / 180.0);
-                pub_acker_.publish(cmd_control_);
-                index = 0;
-
             }
 //             else {
 //                 cmd_control_.steering =steering_angle / (70.0 * M_PI / 180.0); //  DUMMY_STEERING_ANGLE should be a value in degree
@@ -183,6 +176,18 @@ void PurePursuit::controller_step(nav_msgs::Odometry odom)
 //                 pub_acker_.publish(cmd_control_);
 //             }
 //            pub_acker_.publish(cmd_control_);
+            if(overtake == true || min_depth_dist < 0.2){
+                std::cout<< "starting overtake" << std::endl;
+                cmd_control_.throttle = -0.1;
+                cmd_control_.steering = 0;
+                pub_acker_.publish(cmd_control_);
+                ros::Duration(0.20).sleep();
+                cmd_control_.throttle = 0.09;
+                cmd_control_.steering =steering_angle / (70.0 * M_PI / 180.0);
+                pub_acker_.publish(cmd_control_);
+                index = index+3;
+
+            }
             float pos_error_x = path_[index].getOrigin().x() - map_t_fa.getOrigin().x();
             float pos_error_y = path_[index].getOrigin().y() - map_t_fa.getOrigin().y();
 
@@ -205,7 +210,7 @@ void PurePursuit::controller_step(nav_msgs::Odometry odom)
 //                file << pos_error << ",";
 //                file.close();
                 //  std::cout << "index "<< index<< std::endl;
-                index = index + 1;
+                index = index + 1 ;
                 if (index == path_.size()-6)
                 {
                     std::cout << "GOAL REACHED BY PURE PURSUIT " << index << std::endl;
@@ -213,10 +218,8 @@ void PurePursuit::controller_step(nav_msgs::Odometry odom)
 //                    index = 0;
                     ros::Duration(1).sleep();
                     sendGoalMsg(false);
-                    index = 0;
-
-
-                }
+                    index = 1;
+               }
 
 
 
