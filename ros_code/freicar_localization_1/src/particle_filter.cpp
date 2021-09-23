@@ -23,7 +23,7 @@ particle_filter::particle_filter(freicar::map::Map* map, std::shared_ptr<ros_vis
     // Spread particles over whole map
     if(!particles_init_){
         InitParticles();
-        visualizer_->SendPoses(particles_, "particles", "world");
+        visualizer_->SendPoses(particles_, "particles", "map");
         particles_init_ = true;
     }
     use_lane_reg_ = use_lane_reg;
