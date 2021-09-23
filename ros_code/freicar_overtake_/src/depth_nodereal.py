@@ -16,6 +16,7 @@ import numpy as np
 
 from cv_bridge import CvBridge
 import time
+car_name = rospy.get_param("carname")
 
 fov = 84.8711
 def trimmean(arr, percent):
@@ -151,10 +152,10 @@ def depth_node():
 
 # Init pusblisher and subscriber
     rospy.init_node('Seg_Reg_node', anonymous=True)
-    bb_box = rospy.Subscriber('/freicar_1/bounding_box',
+    bb_box = rospy.Subscriber(car_name+'/bounding_box',
                              bb_msg, callback=box_callback, queue_size=10)
     # pdb.set_trace()
-    rospy.Subscriber('/freicar_1/sim/camera/depth/front/image_float', Image, callback=img_callback, queue_size=1)
+    rospy.Subscriber(car_name+'/sim/camera/depth/front/image_float', Image, callback=img_callback, queue_size=1)
 
 
 
