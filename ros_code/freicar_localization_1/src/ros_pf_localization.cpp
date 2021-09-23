@@ -137,6 +137,7 @@ void Localizer::markerCallback(const freicar_common::FreiCarSignsConstPtr &marke
 void Localizer::OdoCallback(const nav_msgs::OdometryConstPtr &msg) {
     // Apply motion model to all particles
     p_filter->MotionStep(*msg);
+    node_handle1->getParam("carname", car_name);
 
     //visualizer_->SendBestParticle(p_filter->getBestParticle(), "/map");
     Particle best_particle = p_filter->getMeanParticle(100);
