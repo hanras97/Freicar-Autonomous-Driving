@@ -67,6 +67,7 @@ public:
     virtual void controller_step(nav_msgs::Odometry odom);
     void min_depth(std_msgs::Float64 msg);
     void sub_stop(std_msgs::Bool msg);
+    void sub_HLCstop(std_msgs::Bool msg);
     void receivePath(raiscar_msgs::ControllerPath new_path);
     void sendGoalMsg(const bool reached);
     void sub_overtake(std_msgs::Bool msg);
@@ -88,20 +89,23 @@ public:
     bool completion_advertised_;
     raiscar_msgs::ControlCommand cmd_control_;
     bool stop_sign;
+    bool HLC_stop;
     bool overtake;
+
     bool flag=true;
     int i,mini=0;
-
+    
     bool HLC_bool;
     float min_depth_dist;
     std::string car_name;
+    std::shared_ptr<ros::NodeHandle> node_handle = std::make_shared<ros::NodeHandle>();
 
     freicar_common::FreiCarControl HLC_msg;
-
+    
 
     // Ros infrastructure
     ros::NodeHandle nh_, nh_private_;
-    ros::Subscriber sub_odom_, sub_path_, sub_stop_, sub_lidar_,sub_overtake_,min_depth_,sub_hlc_;
+    ros::Subscriber sub_odom_, sub_path_, sub_stop_, sub_lidar_,sub_overtake_,min_depth_,sub_hlc_,sub_HLCstop_;
     ros::Publisher pub_acker_, pub_goal_reached_;
     tf2_ros::Buffer tf_buffer_;
     tf2_ros::TransformListener tf_listener_;
