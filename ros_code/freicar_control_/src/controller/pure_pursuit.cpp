@@ -126,7 +126,7 @@ void PurePursuit::controller_step(nav_msgs::Odometry odom)
             steering_angle = steering_angle / (70.0 * M_PI / 180.0);
             std::cout<<steering_angle<<std::endl;
             cmd_control_.steering = steering_angle;//  DUMMY_STEERING_ANGLE should be a value in degree
-            if(steering_angle < -0.3  || steering_angle > 0.3 )
+            if(steering_angle < -0.4  || steering_angle > 0.4 )
             {
 
                 cmd_control_.throttle = 0.09;
@@ -156,7 +156,6 @@ void PurePursuit::controller_step(nav_msgs::Odometry odom)
             pub_acker_.publish(cmd_control_);
 
             if(stop_sign == true){
-                ros::Duration(0.5).sleep();
                 std::cout<< "did i stop? " << std::endl;
                 cmd_control_.throttle = 0;
                 cmd_control_.brake = 1;
@@ -170,6 +169,25 @@ void PurePursuit::controller_step(nav_msgs::Odometry odom)
                 std::cout<< "START AGAIN " << cmd_control_.throttle << std::endl;
                 pub_acker_.publish(cmd_control_);
             }
+            if(HLC_stop == true){
+                std::cout<< "did i stop? " << std::endl;
+                cmd_control_.throttle = 0;
+                cmd_control_.brake = 1;
+//                 cmd_control_.steering = 0;
+                pub_acker_.publish(cmd_control_);
+                ros::Duration(1).sleep();
+                cmd_control_.brake = 0;
+                pub_acker_.publish(cmd_control_);
+                std::cout<< "STOP IN CONTROLLER" << cmd_control_.throttle << std::endl;
+
+//                ros::Duration(1).sleep();
+//                cmd_control_.throttle = 0.12;
+//                cmd_control_.brake = 0;
+//                std::cout<< "i woke up " << std::endl;
+//                std::cout<< "START AGAIN " << cmd_control_.throttle << std::endl;
+//                pub_acker_.publish(cmd_control_);
+            }
+
 //             else {
 //                 cmd_control_.steering =steering_angle / (70.0 * M_PI / 180.0); //  DUMMY_STEERING_ANGLE should be a value in degree
 //                 cmd_control_.throttle = 0.1;
@@ -186,7 +204,7 @@ void PurePursuit::controller_step(nav_msgs::Odometry odom)
                 cmd_control_.throttle = 0.09;
                 cmd_control_.steering =steering_angle / (70.0 * M_PI / 180.0);
                 pub_acker_.publish(cmd_control_);
-                index = index+3;
+                index = index+2;
 
             }
             float pos_error_x = path_[index].getOrigin().x() - map_t_fa.getOrigin().x();
@@ -216,8 +234,8 @@ void PurePursuit::controller_step(nav_msgs::Odometry odom)
                 {
                     std::cout << "GOAL REACHED BY PURE PURSUIT " << index << std::endl;
                     sendGoalMsg(true);
-//                    index = 0;
-                    ros::Duration(1).sleep();
+                    //index = 0;
+                    ros::Duration(0.8).sleep();
                     sendGoalMsg(false);
                     index = 1;
                }
