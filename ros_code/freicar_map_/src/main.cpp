@@ -47,6 +47,7 @@ std_msgs::Bool goal_bool;
 freicar::mapobjects::Point3D p_current;
 freicar::mapobjects::Lane *current_lane;
 ros::Publisher snm_pub;
+ros::Publisher snm_pub1;
 ros::Publisher jun_pub;
     freicar_common::FreiCarControl HLC_msg;
 bool HLC_bool;
@@ -57,7 +58,9 @@ bool junction_arrived;
 auto& map_instance = freicar::map::Map::GetInstance();
 
 
-int flag_1=1;
+int count=0;
+int start_flag =0;
+int continue_flag =0;
 static geometry_msgs::Point ToGeometryPoint(const freicar::mapobjects::Point3D& pt) {
     geometry_msgs::Point rt;
     rt.x = pt.x();
@@ -285,11 +288,12 @@ int main(int argc, char **argv)
 //            std::cout << " stop_line" << stop_line << std::endl;
 
             snm_pub = node_handle->advertise<std_msgs::Bool>("Stop_sign", 1);
+            snm_pub1 = node_handle->advertise<std_msgs::Bool>("HLC_stop", 1);
             if(!Road_sign.empty()) {
 //                std::cout << " Road_sign" << Road_sign.at(0) << std::endl;
                 auto sign_type = current_lane->GetRoadSigns().at(0)->GetSignType();
 //                std::cout << " Sign Type" << sign_type << std::endl;
-                if((sign_type == "Stop" && stop_line != 0) || (sign_type == "Stop" && stop_line != 0 && HLC_msg.command == "stop")){   //TODO STOP
+                if((sign_type == "Stop" && stop_line != 0)){   //TODO STOP
                     std::cout << "  I want to stop" << std::endl;
                     std_msgs::Bool stop_flag;
 //                    ros::Duration(0.2).sleep();
@@ -304,6 +308,30 @@ int main(int argc, char **argv)
                     ros::Duration(5).sleep();
                     //continue;
                 }
+            }
+
+            std_msgs::Bool HLCstop_flag;
+            if(HLC_msg.command == "stop") {
+
+                HLCstop_flag.data = true;
+                snm_pub1.publish(HLCstop_flag);
+            }
+            if (HLC_msg.command == "start") {
+                    HLCstop_flag.data = false;
+                    snm_pub1.publish(HLCstop_flag);
+            }
+
+
+//                    ros::Duration(0.2).sleep();
+//                start_flag = 1;
+//                continue_flag=1;
+//                    ros::Duration(0.5).sleep();
+//                    rate.sleep();
+
+            if(HLC_msg.command == "start" && count == 0)
+            {
+                start_flag = 1;
+                count=1;
             }
 
             jun_pub = node_handle->advertise<std_msgs::Bool>("JUNC_sign", 1);
@@ -349,11 +377,11 @@ int main(int argc, char **argv)
             node_handle2->getParam("/freicar_"+car_name+"_carla_proxy/spawn/heading", spawn_heading);
 
 
-            if (p_current.x()+p_current.y()!=0 && flag_1==1)
+            if (p_current.x()+p_current.y()!=0 && start_flag==1)
             {
-                flag_1 = 0;
+                start_flag = 0;
                 std::cout<<"Path set first time"<<std::endl;
-                auto plan1 = freicar::planning::lane_follower::GetPlan(Point3D(spawn_x, spawn_y , 0), freicar::enums::PlannerCommand{HLC_enum}, 9,20);
+                auto plan1 = freicar::planning::lane_follower::GetPlan(Point3D(spawn_x, spawn_y , 0), freicar::enums::PlannerCommand{HLC_enum}, 15,30);
                 PublishPlan(plan1, 1.0, 0.1, 0.4, 300, "plan_1", tf);
 
 
@@ -361,10 +389,11 @@ int main(int argc, char **argv)
             if(goal_bool.data == true || (HLC_bool && junction_arrived )) {
                 std::cout<<"HOW MANY TIMES IS THIS CALLED ?"<<std::endl;
 
-                auto plan = freicar::planning::lane_follower::GetPlan(Point3D(p_current.x(), p_current.y() , 0), freicar::enums::PlannerCommand{HLC_enum}, 9,20); //TODO
+                auto plan = freicar::planning::lane_follower::GetPlan(Point3D(p_current.x(), p_current.y() , 0), freicar::enums::PlannerCommand{HLC_enum}, 15,30); //TODO
                 PublishPlan(plan, 1.0, 0.1, 0.4, 300, "plan_1", tf);
 
                 HLC_bool = false;
+                continue_flag=0;
                 junction_arrived = false;
             }
 
