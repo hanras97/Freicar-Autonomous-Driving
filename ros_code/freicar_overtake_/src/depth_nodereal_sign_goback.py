@@ -8,6 +8,7 @@ from std_msgs.msg import Float64
 import cv2
 
 from cv_bridge import CvBridge
+car_name = rospy.get_param("carname")
 
 
 def img_callback(msg):
@@ -36,7 +37,7 @@ def depth_node_stop():
 
     rospy.init_node('stop_collision_with_sign', anonymous=True)
 
-    rospy.Subscriber('/freicar_1/sim/camera/depth/front/image_float', Image, callback=img_callback, queue_size=1)
+    rospy.Subscriber(car_name+'/sim/camera/depth/front/image_float', Image, callback=img_callback, queue_size=1)
 
     rospy.spin()
 
