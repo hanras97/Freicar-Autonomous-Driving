@@ -176,7 +176,7 @@ void PurePursuit::controller_step(nav_msgs::Odometry odom)
 //                 pub_acker_.publish(cmd_control_);
 //             }
 //            pub_acker_.publish(cmd_control_);
-            if(overtake == true || min_depth_dist < 0.2){
+            if(min_depth_dist < 0.2){
                 std::cout<< "starting overtake" << std::endl;
                 cmd_control_.throttle = -0.1;
                 cmd_control_.steering = 0;
