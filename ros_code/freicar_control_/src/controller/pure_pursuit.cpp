@@ -156,6 +156,7 @@ void PurePursuit::controller_step(nav_msgs::Odometry odom)
             pub_acker_.publish(cmd_control_);
 
             if(stop_sign == true){
+                ros::Duration(0.5).sleep();
                 std::cout<< "did i stop? " << std::endl;
                 cmd_control_.throttle = 0;
                 cmd_control_.brake = 1;
