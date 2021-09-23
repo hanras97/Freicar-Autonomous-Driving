@@ -1,9 +1,9 @@
 <launch>
-<node pkg="freicar_map_" type="freicar_map__node" name="freicar_map_" launch-prefix="bash -c 'sleep 31.1; $0 $@' ">
+<node pkg="freicar_map_" type="freicar_map__node" name="freicar_map_" >
   </node>
 <node pkg="freicar_sign_detect" type="freicar_sign_detect_node" name="sign_detector" output="screen"/>
 	<arg name="evaluate" default="true" />	<arg name="use_lane_regression" default="false" />
-	<node name="freicar_localization_1" pkg="freicar_localization_1" type="freicar_localization_1_node" respawn="false" output="screen"> <param name="evaluate"  type="bool" value="$(arg evaluate)" />		<param name="use_lane_regression"       type="bool" value="$(arg use_lane_regression)" />	</node>
+	<node name="freicar_localization_1" pkg="freicar_localization_1" launch-prefix="bash -c 'sleep 31.1; $0 $@' " type="freicar_localization_1_node" respawn="false" output="screen"> <param name="evaluate"  type="bool" value="$(arg evaluate)" />		<param name="use_lane_regression"       type="bool" value="$(arg use_lane_regression)" />	</node>
 
 
 </launch>
