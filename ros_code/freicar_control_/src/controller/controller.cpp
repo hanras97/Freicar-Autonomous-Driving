@@ -20,8 +20,6 @@ float PID::step(const float error, const ros::Time stamp){
 
     double out = p_ * error + i_ * integral + d_ * delta_e; // TODO  : Optimise later
 
-//    std::cout << "P value:  " << p_ * error << " D value: " << d_ * delta_e << " I value: " << i_ * integral << std::endl;
-
     prev_t = stamp;
     prev_e = error;
     return out;
@@ -61,7 +59,6 @@ std::vector<tf2::Transform> controller::discretizePath(std::vector<tf2::Transfor
     std::vector<tf2::Transform> disc_path;
     disc_path.push_back(path.at(0));
 
-//    tf2::Vector3 last_dir;
     for(int i=0; i< (path.size()-1); i++){
         float current_d = dist;
         tf2::Vector3 t1p = path.at(i).getOrigin();
@@ -91,7 +88,6 @@ std::vector<tf2::Transform> controller::discretizePath(std::vector<tf2::Transfor
 std::vector<tf2::Transform> controller::transformPath(nav_msgs::Path &path, const std::string target_frame){
     std::vector<tf2::Transform> t_path;
     if(path.header.frame_id != target_frame){
-//        std::cout << "Transforming path to " << target_frame << std::endl;
 
         geometry_msgs::TransformStamped tf_msg;
         tf2::Stamped<tf2::Transform> transform;
@@ -121,13 +117,12 @@ std::vector<tf2::Transform> controller::transformPath(nav_msgs::Path &path, cons
  */
 void controller::receivePath(raiscar_msgs::ControllerPath new_path)
 {
-// When a new path received, the previous one is simply discarded
-// It is up to the planner/motion manager to make sure that the new
-// path is feasible.
-// ROS_INFO("Received new path");
+    // When a new path received, the previous one is simply discarded
+    // It is up to the planner/motion manager to make sure that the new
+    // path is feasible.
+    // ROS_INFO("Received new path");
 
 
-//vel_override_ = new_path.des_vel;
     if (new_path.path_segment.poses.size() > 0)
     {
         path_ = transformPath(new_path.path_segment, map_frame_id_);
@@ -139,15 +134,20 @@ void controller::receivePath(raiscar_msgs::ControllerPath new_path)
         path_ = std::vector<tf2::Transform>();
         goal_reached_ = true;
         completion_advertised_ = true;
-// ROS_WARN_STREAM("Received empty path!");
     }
 
-//    path_ = discretizePath(path_, 0.5);
 }
 void controller::sub_stop(std_msgs::Bool msg)
 {
     stop_sign = msg.data;
 }
+
+void controller::sub_HLCstop(std_msgs::Bool msg)
+{
+    HLC_stop = msg.data;
+}
+
+
 
 void controller::min_depth(std_msgs::Float64 msg)
 {
@@ -162,8 +162,6 @@ void controller::sub_overtake(std_msgs::Bool msg)
 
 void controller::sub_lidar(sensor_msgs::PointCloud2 data)
 {
-//    std::cout << "subscribed to lidar !!!" << std::endl;
-//    BOOST_FOREACH (const pcl::PointXYZ& pt, data)
 
     sensor_msgs::PointCloud out_pc;
     sensor_msgs::convertPointCloud2ToPointCloud(data, out_pc);
@@ -172,31 +170,21 @@ void controller::sub_lidar(sensor_msgs::PointCloud2 data)
     {
         geometry_msgs::Point32 point;
         point.z = out_pc.points[i].z ;
-//        std::cout<<"point z"<<point.z<<std::endl;
         if(out_pc.points[i].z > 2.9)
         {
             counter = counter + 1;
         }
-
-
-
-//        pcl::toROSMsg (*cloud, image_)
-//        pcl::
-
     }
-//    std::cout<<"counter"<<counter<<std::endl;
 
 
 
 }
-//HERE
 void controller::sub_HLC (freicar_common::FreiCarControl msg)
 {
     HLC_msg.command = msg.command;
     HLC_msg.name = msg.name;
     HLC_bool = true;
 }
-//STOP HERE
 /*
  * Virtual function that needs to be reimplemented
  */
@@ -205,14 +193,14 @@ void controller::controller_step(nav_msgs::Odometry odom)
     std::cout << "No action implemented ..." << std::endl;
 }
 
-controller::controller():pos_tol_(0.1), idx_(0),
-                         goal_reached_(true), nh_private_("~"), tf_listener_(tf_buffer_), vel_pid(0.5, 0.15, 0.000){
-// Get parameters from the parameter server
+controller::controller():pos_tol_(0.5), idx_(0),
+                         goal_reached_(true), nh_private_("~"), tf_listener_(tf_buffer_), vel_pid(0.05, 0.4, 0.0){
+    // Get parameters from the parameter server
     nh_private_.param<double>("wheelbase", L_, 0.36);
 
     nh_private_.param<double>("position_tolerance", pos_tol_, 0.1);
     nh_private_.param<double>("steering_angle_limit", delta_max_, 1.22173);
-    nh_private_.param<float>("desired_velocity", des_v_, 0.2);
+    nh_private_.param<float>("desired_velocity", des_v_, 0.1);
 
     nh_private_.param<std::string>("map_frame_id", map_frame_id_, "map");
     nh_private_.param<float>("vmax", vmax_, 5.0);
@@ -222,7 +210,7 @@ controller::controller():pos_tol_(0.1), idx_(0),
     front_axis_frame_id_ = tracker_frame_id + "/front_axis";
     rear_axis_frame_id_ = tracker_frame_id + "/rear_axis";
 
-// Populate messages with static data
+    // Populate messages with static data
     target_p_.header.frame_id = map_frame_id_;
     target_p_.child_frame_id = target_frame_id_;
     target_p_.transform.rotation.w = 1.0;
@@ -232,18 +220,18 @@ controller::controller():pos_tol_(0.1), idx_(0),
     lookahead_.transform.rotation.w = 1.0;
 
 
-// Subscribers to path segment and odometry
+    // Subscribers to path segment and odometry
     sub_path_ = nh_.subscribe("path_segment", 1, &controller::receivePath, this);
     sub_odom_ = nh_.subscribe("odometry", 1, &controller::controller_step, this);
+
     sub_stop_ = nh_.subscribe("Stop_sign", 1, &controller::sub_stop,this);
+    sub_HLCstop_ = nh_.subscribe("HLC_stop", 1, &controller::sub_HLCstop,this);
     min_depth_ = nh_.subscribe("min_depth", 1, &controller::min_depth,this);
     sub_lidar_ = nh_.subscribe(car_name+"/sim/lidar", 1, &controller::sub_lidar,this);
     sub_overtake_ = nh_.subscribe("/overtake", 1000, &controller::sub_overtake,this);
-//HERE
     sub_hlc_ = nh_.subscribe("/overtake", 1000, &controller::sub_overtake,this);
-//STOP HERE
 //    ros::Subscriber sub3 = node_handle->subscribe("car_localization", 1, callback_car_localization);
-// Publishers for the control command and the "reached" message
+    // Publishers for the control command and the "reached" message
     pub_acker_ = nh_.advertise<raiscar_msgs::ControlCommand>("control", 1);
     pub_goal_reached_ = nh_.advertise<std_msgs::Bool>("goal_reached", 1);
     completion_advertised_ = false;
