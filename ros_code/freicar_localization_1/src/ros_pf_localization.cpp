@@ -151,7 +151,7 @@ void Localizer::OdoCallback(const nav_msgs::OdometryConstPtr &msg) {
 
 //    ROS_INFO("Broadcaster done");
 
-    Eigen::Quaternionf q(best_particle.transform.rotation().matrix());
+    Eigen::Quaternionf q(best_particle.transform.rotation());
 
     transformStamped.transform.rotation.x = q.y();
     transformStamped.transform.rotation.y = q.x();
