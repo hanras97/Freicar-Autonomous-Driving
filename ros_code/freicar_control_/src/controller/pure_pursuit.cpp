@@ -195,18 +195,18 @@ void PurePursuit::controller_step(nav_msgs::Odometry odom)
 //                 pub_acker_.publish(cmd_control_);
 //             }
 //            pub_acker_.publish(cmd_control_);
-            if(min_depth_dist < 0.2){
-                std::cout<< "starting overtake" << std::endl;
-                cmd_control_.throttle = -0.1;
-                cmd_control_.steering = 0;
-                pub_acker_.publish(cmd_control_);
-                ros::Duration(0.20).sleep();
-                cmd_control_.throttle = 0.09;
-                cmd_control_.steering =steering_angle / (70.0 * M_PI / 180.0);
-                pub_acker_.publish(cmd_control_);
-                index = index+2;
+//             if(min_depth_dist < 0.2){
+//                 std::cout<< "starting overtake" << std::endl;
+//                 cmd_control_.throttle = -0.1;
+//                 cmd_control_.steering = 0;
+//                 pub_acker_.publish(cmd_control_);
+//                 ros::Duration(0.20).sleep();
+//                 cmd_control_.throttle = 0.09;
+//                 cmd_control_.steering =steering_angle / (70.0 * M_PI / 180.0);
+//                 pub_acker_.publish(cmd_control_);
+//                 index = index+2;
 
-            }
+//             }
             float pos_error_x = path_[index].getOrigin().x() - map_t_fa.getOrigin().x();
             float pos_error_y = path_[index].getOrigin().y() - map_t_fa.getOrigin().y();
 
