@@ -489,85 +489,85 @@ int main(int argc, char **argv)
                 junction_arrived = false;
             }
 
-            if (overtake.data == true) {
-                overtake.data = false;
-                //std::cout << "x postion " << p_current.x() << std::endl;
-                //std::cout << "current lane " << current_lane->GetUuid().GetUuidValue() << std::endl;
-                //std::cout << "I'm here or not" << goal_bool.data << std::endl;
-                //OPPOSITE LANE FROM CAR
-                auto *opposite_lane = current_lane->GetConnection(freicar::mapobjects::Lane::OPPOSITE);
-                auto opposite_l_uuid = opposite_lane->GetUuid().GetUuidValue();
-                std::cout << "opposite lane " << opposite_l_uuid << std::endl;
-                //float width = opposite_lane->GetWidth();
-                //auto opposite_points = opposite_lane->GetPoints();
-                //fake plan
-                //CREATE A PLAN
-                auto plan4 = freicar::planning::lane_follower::GetPlan(
-                        Point3D(p_closest.x(), p_closest.y(), p_closest.z()), freicar::enums::STRAIGHT, 10, 30);
-                std::cout << "postion x  before starting points " << plan4[0].position.x() << std::endl;
-                //2.5 METERS FROM MY POSITION
-                Point3D starting_plan = Point3D(plan4[4].position.x(), plan4[4].position.y(),
-                                                plan4[4].position.z());
+//             if (overtake.data == true) {
+//                 overtake.data = false;
+//                 //std::cout << "x postion " << p_current.x() << std::endl;
+//                 //std::cout << "current lane " << current_lane->GetUuid().GetUuidValue() << std::endl;
+//                 //std::cout << "I'm here or not" << goal_bool.data << std::endl;
+//                 //OPPOSITE LANE FROM CAR
+//                 auto *opposite_lane = current_lane->GetConnection(freicar::mapobjects::Lane::OPPOSITE);
+//                 auto opposite_l_uuid = opposite_lane->GetUuid().GetUuidValue();
+//                 std::cout << "opposite lane " << opposite_l_uuid << std::endl;
+//                 //float width = opposite_lane->GetWidth();
+//                 //auto opposite_points = opposite_lane->GetPoints();
+//                 //fake plan
+//                 //CREATE A PLAN
+//                 auto plan4 = freicar::planning::lane_follower::GetPlan(
+//                         Point3D(p_closest.x(), p_closest.y(), p_closest.z()), freicar::enums::STRAIGHT, 10, 30);
+//                 std::cout << "postion x  before starting points " << plan4[0].position.x() << std::endl;
+//                 //2.5 METERS FROM MY POSITION
+//                 Point3D starting_plan = Point3D(plan4[4].position.x(), plan4[4].position.y(),
+//                                                 plan4[4].position.z());
 
-                auto q_closest = map.FindClosestLanePoints(starting_plan.x(),
-                                                           starting_plan.y(),
-                                                           starting_plan.z(),
-                                                           1)[0].first;
-                //CURRENT LANE OF THE POINT AT 2.5 METERS AWAY
-                const freicar::mapobjects::Lane *current_lane2;
-                current_lane2 = map.FindLaneByUuid(p_closest.GetLaneUuid());
-                //OPPOSITE LANE OF THAT POINT
-                auto *opposite_lane2 = current_lane2->GetConnection(freicar::mapobjects::Lane::OPPOSITE);
-                auto opposite_points = opposite_lane2->GetPoints();
+//                 auto q_closest = map.FindClosestLanePoints(starting_plan.x(),
+//                                                            starting_plan.y(),
+//                                                            starting_plan.z(),
+//                                                            1)[0].first;
+//                 //CURRENT LANE OF THE POINT AT 2.5 METERS AWAY
+//                 const freicar::mapobjects::Lane *current_lane2;
+//                 current_lane2 = map.FindLaneByUuid(p_closest.GetLaneUuid());
+//                 //OPPOSITE LANE OF THAT POINT
+//                 auto *opposite_lane2 = current_lane2->GetConnection(freicar::mapobjects::Lane::OPPOSITE);
+//                 auto opposite_points = opposite_lane2->GetPoints();
 
-                std::cout << starting_plan.x() << std::endl;
-                Point3D closest_point;
-                //std::cout<< closest_point.x() << std::endl;
-                std::cout << opposite_points.size() << std::endl;
-                float dist = 2.0f;
-                auto opposite_l_uuid2 = opposite_lane2->GetUuid().GetUuidValue();
-                std::cout << "uuid other lane: " << opposite_l_uuid2 << std::endl;
-                std::cout << "dist" << dist << std::endl;
-                //ITERATE OVER ALL POINTS IN THE OPPOSITE LANE TO GET THE CLOSEST
-                for (auto &opposite_point : opposite_points) {
-                    std::cout << "dist inside "
-                              << opposite_point.ComputeDistance(starting_plan.x(), starting_plan.y(), starting_plan.z()) << std::endl;
-                    if (opposite_point.ComputeDistance(starting_plan.x(), starting_plan.y(), starting_plan.z()) < dist) {
-                        closest_point = opposite_point;
-                        dist = opposite_point.ComputeDistance(starting_plan.x(), starting_plan.y(), starting_plan.z());
-                        std::cout << "dist inside " << dist << std::endl;
+//                 std::cout << starting_plan.x() << std::endl;
+//                 Point3D closest_point;
+//                 //std::cout<< closest_point.x() << std::endl;
+//                 std::cout << opposite_points.size() << std::endl;
+//                 float dist = 2.0f;
+//                 auto opposite_l_uuid2 = opposite_lane2->GetUuid().GetUuidValue();
+//                 std::cout << "uuid other lane: " << opposite_l_uuid2 << std::endl;
+//                 std::cout << "dist" << dist << std::endl;
+//                 //ITERATE OVER ALL POINTS IN THE OPPOSITE LANE TO GET THE CLOSEST
+//                 for (auto &opposite_point : opposite_points) {
+//                     std::cout << "dist inside "
+//                               << opposite_point.ComputeDistance(starting_plan.x(), starting_plan.y(), starting_plan.z()) << std::endl;
+//                     if (opposite_point.ComputeDistance(starting_plan.x(), starting_plan.y(), starting_plan.z()) < dist) {
+//                         closest_point = opposite_point;
+//                         dist = opposite_point.ComputeDistance(starting_plan.x(), starting_plan.y(), starting_plan.z());
+//                         std::cout << "dist inside " << dist << std::endl;
 
-                    }
+//                     }
 
-                }
+//                 }
 
 
-                //std::cout << "closest" << closest_point.x() << std::endl;
-                //FAKE PLAN TO OVERTAKE
-                auto planovertake2 = freicar::planning::lane_follower::GetPlan(
-                        Point3D(closest_point.x(), closest_point.y(), closest_point.z()), freicar::enums::STRAIGHT,
-                        2.5, 5);
+//                 //std::cout << "closest" << closest_point.x() << std::endl;
+//                 //FAKE PLAN TO OVERTAKE
+//                 auto planovertake2 = freicar::planning::lane_follower::GetPlan(
+//                         Point3D(closest_point.x(), closest_point.y(), closest_point.z()), freicar::enums::STRAIGHT,
+//                         2.5, 5);
 
-                //SET THE NEW POINT TO THE PLAN
-                plan4[0].position.SetX(planovertake2[4].position.x());
-                plan4[0].position.SetY(planovertake2[4].position.y());
-                plan4[0].position.SetZ(planovertake2[4].position.z());
-                plan4[1].position.SetX(planovertake2[3].position.x());
-                plan4[1].position.SetY(planovertake2[3].position.y());
-                plan4[1].position.SetZ(planovertake2[3].position.z());
-                plan4[2].position.SetX(planovertake2[2].position.x());
-                plan4[2].position.SetY(planovertake2[2].position.y());
-                plan4[2].position.SetZ(planovertake2[2].position.z());
-                plan4[3].position.SetX(planovertake2[1].position.x());
-                plan4[3].position.SetY(planovertake2[1].position.y());
-                plan4[3].position.SetZ(planovertake2[1].position.z());
-                plan4[4].position.SetX(planovertake2[0].position.x());
-                plan4[4].position.SetY(planovertake2[0].position.y());
-                plan4[4].position.SetZ(planovertake2[0].position.z());
-                //PUBLISH PLAN
-                PublishPlan(plan4, 1.0, 0.1, 0.4, 300, "plan_1", tf);
-                //overtaking_done = false;
-            }
+//                 //SET THE NEW POINT TO THE PLAN
+//                 plan4[0].position.SetX(planovertake2[4].position.x());
+//                 plan4[0].position.SetY(planovertake2[4].position.y());
+//                 plan4[0].position.SetZ(planovertake2[4].position.z());
+//                 plan4[1].position.SetX(planovertake2[3].position.x());
+//                 plan4[1].position.SetY(planovertake2[3].position.y());
+//                 plan4[1].position.SetZ(planovertake2[3].position.z());
+//                 plan4[2].position.SetX(planovertake2[2].position.x());
+//                 plan4[2].position.SetY(planovertake2[2].position.y());
+//                 plan4[2].position.SetZ(planovertake2[2].position.z());
+//                 plan4[3].position.SetX(planovertake2[1].position.x());
+//                 plan4[3].position.SetY(planovertake2[1].position.y());
+//                 plan4[3].position.SetZ(planovertake2[1].position.z());
+//                 plan4[4].position.SetX(planovertake2[0].position.x());
+//                 plan4[4].position.SetY(planovertake2[0].position.y());
+//                 plan4[4].position.SetZ(planovertake2[0].position.z());
+//                 //PUBLISH PLAN
+//                 PublishPlan(plan4, 1.0, 0.1, 0.4, 300, "plan_1", tf);
+//                 //overtaking_done = false;
+//             }
 
 
 
