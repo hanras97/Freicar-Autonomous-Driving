@@ -230,7 +230,7 @@ void PurePursuit::controller_step(nav_msgs::Odometry odom)
 //                file.close();
                 //  std::cout << "index "<< index<< std::endl;
                 index = index + 1 ;
-                if (index == path_.size()-6)
+                if (index == path_.size()-4)
                 {
                     std::cout << "GOAL REACHED BY PURE PURSUIT " << index << std::endl;
                     sendGoalMsg(true);
