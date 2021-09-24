@@ -82,10 +82,10 @@ def callback(msg):
     preds = preds[0]
     
    bb_msg = preds['rois']
-    try:
+   try:
         if(preds['scores'][0] > 0.50 ):
             bb_msg = preds['rois']
-    except IndexError:
+   except IndexError:
         bb_msg = preds['rois']
         bb_msg[0][0] = 0.0
         bb_msg[0][1] = 0.0
