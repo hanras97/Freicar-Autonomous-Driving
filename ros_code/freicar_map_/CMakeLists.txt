@@ -25,6 +25,7 @@ find_package(catkin REQUIRED COMPONENTS
 	visualization_msgs
 	freicar_common
 	raiscar_msgs
+	tf
 )
 # creating the catkin package
 catkin_package(
