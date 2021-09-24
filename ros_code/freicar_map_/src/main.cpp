@@ -403,7 +403,7 @@ int main(int argc, char **argv)
 
 
             }
-            auto p_closest_plan = map.FindClosestLanePoints(p_current.x(),
+           // auto p_closest_plan = map.FindClosestLanePoints(p_current.x(),
                                                             p_current.y(),
                                                             p_current.z(),
                                                             1)[0].first;
@@ -451,7 +451,7 @@ int main(int argc, char **argv)
 
                 junction_id = map.GetUpcomingJunctionID(current_l_uuid);
 
-                auto plan2 = freicar::planning::lane_follower::GetPlan(Point3D(p_closest_plan.x(),p_closest_plan.y() , 0),freicar::enums::PlannerCommand{HLC_enum}, 15,30);
+               // auto plan2 = freicar::planning::lane_follower::GetPlan(Point3D(p_closest_plan.x(),p_closest_plan.y() , 0),freicar::enums::PlannerCommand{HLC_enum}, 15,30);
 
 //                auto plan2 = freicar::planning::lane_follower::GetPlan(Point3D(p_closest_plan.x(),p_closest_plan.y() , 0), freicar::enums::PlannerCommand{HLC_enum}, 15,25);
                 // reeset HLC
@@ -467,13 +467,13 @@ int main(int argc, char **argv)
             if(goal_bool.data == true) {
 //                std::cout<<"HOW MANY TIMES IS THIS CALLED ?"<<std::endl;
 //
-//                auto plan = freicar::planning::lane_follower::GetPlan(Point3D(p_current.x(), p_current.y() , 0), freicar::enums::PlannerCommand{HLC_enum}, 15,30); //TODO
+                auto plan = freicar::planning::lane_follower::GetPlan(Point3D(p_current.x(), p_current.y() , 0), freicar::enums::PlannerCommand{HLC_enum}, 15,30); //TODO
 //                PublishPlan(plan, 1.0, 0.1, 0.4, 300, "plan_1", tf);
 //
 //                HLC_bool = false;
 //                continue_flag=0;
 //                junction_arrived = false;
-                auto plan = freicar::planning::lane_follower::GetPlan(Point3D(p_closest_plan.x(),p_closest_plan.y() , 0), freicar::enums::PlannerCommand{HLC_enum}, 15,30); //TODO
+                //auto plan = freicar::planning::lane_follower::GetPlan(Point3D(p_closest_plan.x(),p_closest_plan.y() , 0), freicar::enums::PlannerCommand{HLC_enum}, 15,30); //TODO
                 ///TEST
                 auto previous_lane_points = map.FindClosestLanePoints(p_closest_plan.x(),
                                                                       p_closest_plan.y(),
@@ -575,30 +575,30 @@ int main(int argc, char **argv)
             freicar::logic::JunctionAgent::Intent{0};
             freicar::logic::JunctionAgent agent_junction = freicar::logic::JunctionAgent(p_current_row) ;
 
-            p_observed_agent.current_pose = p_current_row.current_pose;
-            p_observed_agent.current_pose.transform.translation.x = 2.1;
-            p_observed_agent.current_pose.transform.translation.y = 3.26;
-            p_observed_agent.current_pose.transform.translation.z = 0.0f;
+//             p_observed_agent.current_pose = p_current_row.current_pose;
+//             p_observed_agent.current_pose.transform.translation.x = 2.1;
+//             p_observed_agent.current_pose.transform.translation.y = 3.26;
+//             p_observed_agent.current_pose.transform.translation.z = 0.0f;
 
-            p_observed_agent.current_pose.transform.rotation.x = 0.0;
-            p_observed_agent.current_pose.transform.rotation.y = 0.0;
-            p_observed_agent.current_pose.transform.rotation.z = 0.0;
-            p_observed_agent.current_pose.transform.rotation.w = 1.0;
+//             p_observed_agent.current_pose.transform.rotation.x = 0.0;
+//             p_observed_agent.current_pose.transform.rotation.y = 0.0;
+//             p_observed_agent.current_pose.transform.rotation.z = 0.0;
+//             p_observed_agent.current_pose.transform.rotation.w = 1.0;
 
-            p_observed_agent.velocity = p_current_row.velocity ;
-            p_observed_agent.velocity.x = 0.0 ;
-            p_observed_agent.velocity.y =  0.0;
-            p_observed_agent.velocity.z =  0.0;
+//             p_observed_agent.velocity = p_current_row.velocity ;
+//             p_observed_agent.velocity.x = 0.0 ;
+//             p_observed_agent.velocity.y =  0.0;
+//             p_observed_agent.velocity.z =  0.0;
 
-            p_observed_agent.name = "observed_1";
-            p_observed_agent.lane_offset = 0.0f;
+//             p_observed_agent.name = "observed_1";
+//             p_observed_agent.lane_offset = 0.0f;
 
-            auto p_closest_observed = map.FindClosestLanePoints(p_observed_agent.current_pose.transform.translation.x,
-                                                                p_observed_agent.current_pose.transform.translation.y,
-                                                                p_observed_agent.current_pose.transform.translation.z,
-                                                                1)[0].first;
-            std::string current_l_uuid_observed = p_closest_observed.GetLaneUuid();
-            p_observed_agent.lane_uuid = current_l_uuid_observed;
+//             auto p_closest_observed = map.FindClosestLanePoints(p_observed_agent.current_pose.transform.translation.x,
+//                                                                 p_observed_agent.current_pose.transform.translation.y,
+//                                                                 p_observed_agent.current_pose.transform.translation.z,
+//                                                                 1)[0].first;
+//             std::string current_l_uuid_observed = p_closest_observed.GetLaneUuid();
+//             p_observed_agent.lane_uuid = current_l_uuid_observed;
 
 //            std::cout<<"our agent name"<<p_current_row.name<<std::endl;
 //            std::cout<<"observed agent name"<<p_observed_agent.name<<std::endl;
@@ -623,7 +623,7 @@ int main(int argc, char **argv)
             else {
                 agent_junction.intent = freicar::logic::JunctionAgent::Intent::GOING_STRAIGHT;
             }
-            observed_agent.intent = freicar::logic::JunctionAgent::Intent::GOING_RIGHT;
+            //observed_agent.intent = freicar::logic::JunctionAgent::Intent::GOING_RIGHT;
             //Dummy agent
             //const freicar_common::FreiCarAgentLocalization& dummy1 =
 
