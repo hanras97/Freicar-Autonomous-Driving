@@ -26,6 +26,15 @@
     <arg name="node_name" value="timed_roslaunch2" /> 
   </include>
   
+  <include file="$(find timed_roslaunch)/launch/timed_roslaunch.launch">
+    <arg name="time" value="10" />
+    <arg name="pkg" value="freicar_object_bb" />
+    <arg name="file" value="bounding_box.launch" />
+    <arg name="value" value="" />
+    <arg name="node_name" value="timed_roslaunch4" />
+  </include>
+  
+  
 
   <include file="$(find timed_roslaunch)/launch/timed_roslaunch.launch">
     <arg name="time" value="12" />
