@@ -3,21 +3,22 @@ import rospy
 
 
 from sensor_msgs.msg import Image
-#from bounding_box import bounding_box as bb
-from std_msgs.msg import Float32MultiArray as bb_msg
 from raiscar_msgs.msg import ControlCommand
-#from freicar_bb_box_sr.msg import bb as bb_msg
+from std_msgs.msg import Float32MultiArray as bb
 from std_msgs.msg import Bool
+from visualization_msgs.msg import Marker
 
 import pdb
 import cv2
 from std_msgs.msg import Float64
 import numpy as np
 
+
 from cv_bridge import CvBridge
 import time
-car_name = rospy.get_param("carname")
 
+
+car_name = rospy.get_param("carname")
 fov = 84.8711
 def trimmean(arr, percent):
     n = len(arr)
@@ -35,115 +36,145 @@ def box_callback(msg):
     # y1 = int(msg.y1)
     # y2 = int(msg.y1+msg.y2)
 
-    #print(msg.data)
+
     x1 = int(msg.data[0])
-    x2 = int(msg.data[1])
+    x2 = int(msg.data[0]+msg.data[1])
     y1 = int(msg.data[2])
-    y2 = int(msg.data[3])
+    y2 = int(msg.data[2]+msg.data[3])
+    # print("bounding boxes  = ", msg.x1, msg.x2, msg.y1, msg.y2)
 
-    #print("bounding boxes  = ", msg.data, msg.x2, msg.y1, msg.y2)
-
-    #print(x1, x2, y1 ,y2)
+    # print(x1, x2, y1 ,y2)
 # Callback function called for every image received
 
 def img_callback(msg):
-    overtake = True;
-    global bridge, x1, x2, y1, y2
-    #print(msg)
-    bridge = CvBridge()
-    image = bridge.imgmsg_to_cv2(msg, "passthrough")
-    # pdb.set_trace()
-    # image = cv2.resize(image, (384,640))
-    image = cv2.resize(image, (640, 384))
+
+    try:
+    
+        overtake = True;
+        global bridge
+        #print(msg)
+        bridge = CvBridge()
+        image = bridge.imgmsg_to_cv2(msg, "passthrough")
+        # pdb.set_trace()
+        # image = cv2.resize(image, (384,640))
+        image = cv2.resize(image, (640, 384))
+        # cv2.imshow("Image1", image)
+        # cv2.waitKey(3)
 
 
 
+        ###############################
+        #image2 = cv2.resize(image, (384, 640))
+        depth_f = image.min()
 
-    ###############################
-    image2 = cv2.resize(image, ( 384, 640))
-    depth_f = image2[x1:y1, x2:y2]
+        bb_center = ( x1 + y1 ) / 2
+        image_center = np.shape(image)[0] / 2
+        angle_car = (bb_center - image_center) / image_center * (fov/2)
+        #depth_f_min = np.min(depth_f)
 
-    bb_center = ( x1 + y1 ) / 2
-    image_center = np.shape(image2)[0] / 2
-    angle_car = (bb_center - image_center) / image_center * (fov/2)
-    depth_f_min = np.min(depth_f)
+        print("angle" , angle_car)
+        print("depth", depth_f)
 
-    print("angle" , angle_car)
-    print("depth", depth_f_min)
+        #############################
+        # image = cv2.copyMakeBorder(image, top=12, bottom=12, left=0,
+        #                           right=0, borderType=cv2.BORDER_CONSTANT, value=[0, 255, 0])
+        # depth_sign = image.min()
+        # depth = image[x1:x2+x1, y1:y2+y1].min()
+        # depth_sr = image[x1:x2+x1, y1:y2+y1]
 
-    #############################
-    # image = cv2.copyMakeBorder(image, top=12, bottom=12, left=0,
-    #                           right=0, borderType=cv2.BORDER_CONSTANT, value=[0, 255, 0])
-    # depth_sign = image.min()
-    # depth = image[x1:x2+x1, y1:y2+y1].min()
-    # depth_sr = image[x1:x2+x1, y1:y2+y1]
+        # depth = image[x1:x2 , y1:y2 ].min()
+        # depth_sr = image[x1:x2, y1:y2 ]
+        # pdb.set_trace()
 
-    # depth = image[x1:x2 , y1:y2 ].min()
-    # depth_sr = image[x1:x2, y1:y2 ]
-    # pdb.set_trace()
-
-    # mean_trim = trimmean(np.reshape(depth_sr,(-1,1)), 0.9)
-    # print("mean = " , mean_trim , "min", depth)
-    # for i in range(np.shape(depth_sr)[1]):
-    #     print(depth_sr[0:(np.shape(depth_sr)[0]-1)][i])
-
-
-    # depth_sr   MATRIX WITH DEPTH VALUES INSIDE BB
-
-    # height = np.shape(depth_sr)[1]
-    # width = np.shape(depth_sr)[0]
-    #
-    # middle_point_width_low = int(width/2) - 30
-    # middle_point_width_high = int(width / 2) + 30
-    #
-    # middle_point_height_low = int(height / 3) - 15
-    # middle_point_height_high = int(height / 3) + 15
-
-    # depth_sr_car = depth_sr[middle_point_width_low:middle_point_width_high, middle_point_height_low:middle_point_height_high]
-    # print("average = ", np.average(depth_sr_car))
-
-    # pdb.set_trace()
+        # mean_trim = trimmean(np.reshape(depth_sr,(-1,1)), 0.9)
+        # print("mean = " , mean_trim , "min", depth)
+        # for i in range(np.shape(depth_sr)[1]):
+        #     print(depth_sr[0:(np.shape(depth_sr)[0]-1)][i])
 
 
+        # depth_sr   MATRIX WITH DEPTH VALUES INSIDE BB
 
-    # middle_point = depth_sr[int(width/2)][int(height/3)]
-    # print("middle point", middle_point)
-    # test = np.reshape(image[x1:x2, y1:y2], (-1, 1))
-    # for i in range(np.shape(test)[0]):
-    #     print(test[i])
-    # pdb.set_trace()
-    # print(depth)
+        # height = np.shape(depth_sr)[1]
+        # width = np.shape(depth_sr)[0]
+        #
+        # middle_point_width_low = int(width/2) - 30
+        # middle_point_width_high = int(width / 2) + 30
+        #
+        # middle_point_height_low = int(height / 3) - 15
+        # middle_point_height_high = int(height / 3) + 15
 
-    # cv2.imshow("Image", image)
-    #cv2.waitKey(3)
-    # pdb.set_trace()
+        # depth_sr_car = depth_sr[middle_point_width_low:middle_point_width_high, middle_point_height_low:middle_point_height_high]
+        # print("average = ", np.average(depth_sr_car))
+
+        # pdb.set_trace()
 
 
-    ###
-    # original image = [1280 , 720]
-    # model image    = [384  , 640]
-    # bb image       = [384  , 640]
 
-    overtake_publisher = rospy.Publisher('/overtake', Bool, queue_size=10)
-    # collision_publisher = rospy.Publisher('min_depth', Float64, queue_size=10)
+        # middle_point = depth_sr[int(width/2)][int(height/3)]
+        # print("middle point", middle_point)
+        # test = np.reshape(image[x1:x2, y1:y2], (-1, 1))
+        # for i in range(np.shape(test)[0]):
+        #     print(test[i])
+        # pdb.set_trace()
+        # print(depth)
 
-    image = cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)
-    # bb.add(image, x1, y1, x2, y2, color="green")
-    cv2.rectangle(image, (x1, x2), (y1, y2), (0, 255, 0))
-    # cv2.imshow("Image", image)
-    # cv2.waitKey(1)
-    # print(depth)
-    print("depth is " ,depth_f_min)
-    if (depth_f_min < 0.45):
-        # print("im less than 0.65")
-        overtake = True
+        # cv2.imshow("Image", image)
+        #cv2.waitKey(3)
+        # pdb.set_trace()
 
-        overtake_publisher.publish(overtake)
-        time.sleep(1.5)
 
-        overtake = False
-        overtake_publisher.publish(overtake)
-        time.sleep(9)
+        ###
+        # original image = [1280 , 720]
+        # model image    = [384  , 640]
+        # bb image       = [384  , 640]
+
+        overtake_publisher = rospy.Publisher('/overtake', Bool, queue_size=10)
+        # collision_publisher = rospy.Publisher('min_depth', Float64, queue_size=10)
+        topic = car_name + '/bb_marker'
+        pub1 = rospy.Publisher(topic, Marker, queue_size=10)
+
+        # image = cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)
+        # # bb.add(image, x1, y1, x2, y2, color="green")
+        # cv2.rectangle(image, (x1, x2), (y1, y2), (0, 255, 0))
+        # cv2.imshow("Image", image)
+        # cv2.waitKey(1)
+        # print(depth)
+        #print("depth is " ,depth_f)
+        if (depth_f < 0.49 and depth_f > 0.3 and x1+x2 != 0 and y1+y2 !=0):
+            print("im less than 0.5")
+            overtake = True
+            x = (x1+x2) / 400
+            y = (y1+y2) / 400 - image.shape[0] / 400
+
+            # print(x)
+            marker = Marker()
+            marker.header.frame_id = car_name + "/base_link"
+            marker.header.stamp = rospy.Time.now()
+            marker.type = marker.CUBE
+            marker.action = marker.ADD
+            marker.scale.x = 0.1
+            marker.scale.y = 0.1
+            marker.scale.z = 0.1
+            marker.color.a = 1.0
+            marker.color.r = 0.0
+            marker.color.g = 1.0
+            marker.color.b = 1.0
+            marker.pose.position.x = x
+            marker.pose.position.y = y
+            rate = rospy.Rate(10)  # 10hz
+            pub1.publish(marker)
+
+            overtake_publisher.publish(overtake)
+            time.sleep(1.5)
+
+            overtake = False
+            overtake_publisher.publish(overtake)
+            time.sleep(9)
+            rate.sleep()
+    except NameError:
+        print("  ")
+
+
 
 
     # min_depth_dist = depth_sign
@@ -152,10 +183,11 @@ def depth_node():
 
 # Init pusblisher and subscriber
     rospy.init_node('Seg_Reg_node', anonymous=True)
-    bb_box = rospy.Subscriber(car_name+'/bounding_box',
-                             bb_msg, callback=box_callback, queue_size=10)
+    bb_box = rospy.Subscriber(car_name + '/bounding_box',
+                             bb, callback=box_callback, queue_size=10)
     # pdb.set_trace()
-    rospy.Subscriber(car_name+'/sim/camera/depth/front/image_float', Image, callback=img_callback, queue_size=1)
+    rospy.Subscriber(car_name + '/sim/camera/depth/front/image_float', Image, callback=img_callback, queue_size=1)
+
 
 
 
