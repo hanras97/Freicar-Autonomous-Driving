@@ -8,8 +8,8 @@ from std_msgs.msg import Float64
 import cv2
 
 from cv_bridge import CvBridge
-car_name = rospy.get_param("carname")
 
+car_name = rospy.get_param("carname")
 
 def img_callback(msg):
 
@@ -20,15 +20,16 @@ def img_callback(msg):
     image = cv2.resize(image, (640, 384))
 
     depth = image.min()
-    cv2.imshow("Image", image)
-    cv2.waitKey(3)
+    #cv2.imshow("Image", image)
+    # cv2.waitKey(3)
 
     min_depth_dist = depth
 
     print("Image",image.min())
-
+    rate = rospy.Rate(10)
     collision_publisher = rospy.Publisher('min_depth', Float64, queue_size=10)
     collision_publisher.publish(min_depth_dist)
+    rate.sleep()
 
 
 
@@ -37,7 +38,7 @@ def depth_node_stop():
 
     rospy.init_node('stop_collision_with_sign', anonymous=True)
 
-    rospy.Subscriber(car_name+'/sim/camera/depth/front/image_float', Image, callback=img_callback, queue_size=1)
+    rospy.Subscriber(car_name + '/sim/camera/depth/front/image_float', Image, callback=img_callback, queue_size=1)
 
     rospy.spin()
 
