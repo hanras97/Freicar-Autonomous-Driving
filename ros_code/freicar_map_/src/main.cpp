@@ -14,11 +14,16 @@
 #include <cstdio>
 #include <thread>
 #include <ctime>
+#include <tf/transform_datatypes.h>
+#include <tf/transform_listener.h>
 
 #include <visualization_msgs/MarkerArray.h>
 #include "std_msgs/Bool.h"
 #include "yaml.h"
 #include "yaml-cpp/yaml.h"
+
+
+
 
 #include <tf2_ros/transform_listener.h>
 #include <tf2_ros/transform_broadcaster.h>
@@ -40,18 +45,22 @@
 #include <raiscar_msgs/ControlCommand.h>
 
 freicar_common::FreiCarAgentLocalization p_current_row;
+freicar_common::FreiCarAgentLocalization enemy_agent, p_observed_agent;
 //tf2_ros::Buffer tf_buffer_;
 #define DENSIFICATION_LIMIT 0.22 // meters
 ros::Subscriber goal_reached;
 std_msgs::Bool goal_bool;
+std_msgs::Bool overtake;
 freicar::mapobjects::Point3D p_current;
 freicar::mapobjects::Lane *current_lane;
 ros::Publisher snm_pub;
 ros::Publisher snm_pub1;
 ros::Publisher jun_pub;
-    freicar_common::FreiCarControl HLC_msg;
+freicar_common::FreiCarControl HLC_msg;
 bool HLC_bool;
 bool junction_arrived;
+unsigned char HLC_enum;
+std::string car_name;
 //freicar::mapobjects::Uuid uuid_;
 //float offset_;
 //freicar::mapobjects::;  //velocity
@@ -61,6 +70,8 @@ auto& map_instance = freicar::map::Map::GetInstance();
 int count=0;
 int start_flag =0;
 int continue_flag =0;
+int junction_id = -100;
+
 static geometry_msgs::Point ToGeometryPoint(const freicar::mapobjects::Point3D& pt) {
     geometry_msgs::Point rt;
     rt.x = pt.x();
@@ -146,12 +157,45 @@ void callback_car_bestpart (geometry_msgs::PoseArray msg)
         p_current.SetY(msg.poses.at(0).position.y);
     }
 }
+void callback_overtake (std_msgs:: Bool msg){
+    if (msg.data == true)
+    {
+        overtake.data = true;
+    }
+    else
+    {
+        overtake.data = false;
+    }
+}
 
 void callback_HLC (freicar_common::FreiCarControl msg)
 {
     HLC_msg.command = msg.command;
     HLC_msg.name = msg.name;
     HLC_bool = true;
+
+    std::shared_ptr<ros::NodeHandle> node_handle1 = std::make_shared<ros::NodeHandle>();
+    node_handle1->getParam("carname", car_name);
+    if(HLC_msg.command == "start" && HLC_msg.name == car_name)
+    {
+        HLC_enum = 3;
+    }
+    else if (HLC_msg.command == "straight" && HLC_msg.name == car_name)
+    {
+        HLC_enum = 3;
+    }
+    else if (HLC_msg.command == "left" && HLC_msg.name == car_name)
+    {
+        HLC_enum = 1;
+    }
+    else if (HLC_msg.command == "right" && HLC_msg.name == car_name)
+    {
+        HLC_enum = 2;
+    }
+    else
+    {
+        HLC_enum = 4;
+    }
 }
 
 void callback_goal_reached (std_msgs::Bool msg)
@@ -229,7 +273,7 @@ int main(int argc, char **argv)
     using freicar::mapobjects::Point3D;
 //    LaneStar planner(100);
     using freicar::enums::PlannerCommand;
-    std::string car_name;
+
 
 
     std::thread debug_thread([&]() {
@@ -242,6 +286,7 @@ int main(int argc, char **argv)
             ros::Subscriber sub4 = node_handle->subscribe("best_particle", 1, callback_car_bestpart);
             ros::Subscriber sub = node_handle->subscribe(car_name+"/goal_reached", 1, callback_goal_reached);
             ros::Subscriber HL_sub = node_handle->subscribe("/freicar_commands", 1, callback_HLC);
+            ros::Subscriber sub_overtake = node_handle->subscribe("/overtake", 1, callback_overtake);
 
             auto &map = freicar::map::Map::GetInstance();
             const freicar::mapobjects::Lane *current_lane;
@@ -255,30 +300,7 @@ int main(int argc, char **argv)
                                                        p_current.z(),
                                                        1)[0].first;
             current_lane = map.FindLaneByUuid(p_closest.GetLaneUuid());
-            unsigned char HLC_enum;
 
-            if(HLC_msg.command == "start" )
-            {
-                HLC_enum = 3;
-                //flag_1=1;
-            }
-
-            else if (HLC_msg.command == "straight")
-            {
-                HLC_enum = 3;
-            }
-            else if (HLC_msg.command == "left" )
-            {
-                HLC_enum = 1;
-            }
-            else if (HLC_msg.command == "right")
-            {
-                HLC_enum = 2;
-            }
-            else
-            {
-                HLC_enum = 4;
-            }
 
             auto  stop_line = current_lane->GetStopLine();
 //            auto  junction_line = current_lane->IsJunctionLane();
@@ -289,6 +311,7 @@ int main(int argc, char **argv)
 
             snm_pub = node_handle->advertise<std_msgs::Bool>("Stop_sign", 1);
             snm_pub1 = node_handle->advertise<std_msgs::Bool>("HLC_stop", 1);
+
             if(!Road_sign.empty()) {
 //                std::cout << " Road_sign" << Road_sign.at(0) << std::endl;
                 auto sign_type = current_lane->GetRoadSigns().at(0)->GetSignType();
@@ -311,24 +334,17 @@ int main(int argc, char **argv)
             }
 
             std_msgs::Bool HLCstop_flag;
-            if(HLC_msg.command == "stop") {
+            if(HLC_msg.command == "stop" && HLC_msg.name == car_name) {
 
                 HLCstop_flag.data = true;
                 snm_pub1.publish(HLCstop_flag);
             }
-            if (HLC_msg.command == "start") {
+            if (HLC_msg.command == "start" && HLC_msg.name == car_name) {
                     HLCstop_flag.data = false;
                     snm_pub1.publish(HLCstop_flag);
             }
 
-
-//                    ros::Duration(0.2).sleep();
-//                start_flag = 1;
-//                continue_flag=1;
-//                    ros::Duration(0.5).sleep();
-//                    rate.sleep();
-
-            if(HLC_msg.command == "start" && count == 0)
+            if(HLC_msg.command == "start" && HLC_msg.name == car_name && count == 0)
             {
                 start_flag = 1;
                 count=1;
@@ -337,26 +353,27 @@ int main(int argc, char **argv)
             jun_pub = node_handle->advertise<std_msgs::Bool>("JUNC_sign", 1);
             std::string current_l_uuid = p_closest.GetLaneUuid();
             std_msgs::Bool junction_flag;
+
             if (map.GetUpcomingJunctionID(current_l_uuid) != -1) {
                 auto  junction_left = current_lane->JUNCTION_LEFT;
                 junction_flag.data = true;
                 jun_pub.publish(junction_flag);
                 junction_flag.data = false;
                 jun_pub.publish(junction_flag);
-//                junction_arrived = true;
-                std::cout << "on a lane that leads to a junction" << std::endl;
+                junction_arrived = true;
+                //std::cout << "on a lane that leads to a junction" << std::endl;
 
             } else {
                 auto* current_lane = map.FindLaneByUuid(current_l_uuid);
                 auto* next_lane = current_lane->GetConnection(freicar::mapobjects::Lane::STRAIGHT);
                 auto next_l_uuid = next_lane->GetUuid().GetUuidValue();
-                if (next_lane && map.GetUpcomingJunctionID(next_l_uuid) != -1)
-                {
-                    std::cout << "two lanes away from a junction" << std::endl;
-                    junction_arrived = true;
-                } else {
-                    std::cout << "not really close to a junction" << std::endl;
-                }
+//                if (next_lane && map.GetUpcomingJunctionID(next_l_uuid) != -1)
+//                {
+//                    std::cout << "two lanes away from a junction" << std::endl;
+//                    junction_arrived = true;
+//                } else {
+//                    std::cout << "not really close to a junction" << std::endl;
+//                }
             }
 
             //Position of all the roadsign
@@ -380,21 +397,176 @@ int main(int argc, char **argv)
             if (p_current.x()+p_current.y()!=0 && start_flag==1)
             {
                 start_flag = 0;
-                std::cout<<"Path set first time"<<std::endl;
+                //std::cout<<"Path set first time"<<std::endl;
                 auto plan1 = freicar::planning::lane_follower::GetPlan(Point3D(spawn_x, spawn_y , 0), freicar::enums::PlannerCommand{HLC_enum}, 15,30);
                 PublishPlan(plan1, 1.0, 0.1, 0.4, 300, "plan_1", tf);
 
 
             }
-            if(goal_bool.data == true || (HLC_bool && junction_arrived )) {
-                std::cout<<"HOW MANY TIMES IS THIS CALLED ?"<<std::endl;
+            auto p_closest_plan = map.FindClosestLanePoints(p_current.x(),
+                                                            p_current.y(),
+                                                            p_current.z(),
+                                                            1)[0].first;
 
-                auto plan = freicar::planning::lane_follower::GetPlan(Point3D(p_current.x(), p_current.y() , 0), freicar::enums::PlannerCommand{HLC_enum}, 15,30); //TODO
-                PublishPlan(plan, 1.0, 0.1, 0.4, 300, "plan_1", tf);
+            if (map.GetUpcomingJunctionID(current_l_uuid)!=-1  && map.GetUpcomingJunctionID(current_l_uuid) != junction_id)
+            {
 
-                HLC_bool = false;
-                continue_flag=0;
+                static tf::TransformListener enemy_listener;
+                static tf::StampedTransform enemy_transform;
+
+
+
+
+
+                try{
+                    enemy_listener.lookupTransform("map", "enemy_agent",
+                                                   ros::Time(0), enemy_transform);
+
+                    enemy_agent.current_pose.transform.translation.x = enemy_transform.getOrigin().x();
+                    enemy_agent.current_pose.transform.translation.y = enemy_transform.getOrigin().y();
+                    enemy_agent.current_pose.transform.translation.z = 0.0f;
+
+                    enemy_agent.current_pose.transform.rotation.x = 0.0;
+                    enemy_agent.current_pose.transform.rotation.y = 0.0;
+                    enemy_agent.current_pose.transform.rotation.z = 0.0;
+                    enemy_agent.current_pose.transform.rotation.w = 1.0;
+
+                    auto enemy_approximate_lane_points = map.FindClosestLanePoints(enemy_agent.current_pose.transform.translation.x,
+                                                                                   enemy_agent.current_pose.transform.translation.y,
+                                                                                   enemy_agent.current_pose.transform.translation.z,
+                                                                                   1)[0].first;
+
+                    std::string enemy_lane_uuid = enemy_approximate_lane_points.GetLaneUuid();
+                    enemy_agent.lane_uuid = enemy_lane_uuid;
+
+                    std::vector<freicar::logic::JunctionAgent> enemy_agents;
+                    enemy_agents.push_back(enemy_agent);
+
+
+                }
+                catch (tf::TransformException ex){
+                    ROS_ERROR("%s",ex.what());
+                    ros::Duration(1.0).sleep();
+                }
+
+                junction_id = map.GetUpcomingJunctionID(current_l_uuid);
+
+                auto plan2 = freicar::planning::lane_follower::GetPlan(Point3D(p_closest_plan.x(),p_closest_plan.y() , 0),freicar::enums::PlannerCommand{HLC_enum}, 15,30);
+
+//                auto plan2 = freicar::planning::lane_follower::GetPlan(Point3D(p_closest_plan.x(),p_closest_plan.y() , 0), freicar::enums::PlannerCommand{HLC_enum}, 15,25);
+                // reeset HLC
+                HLC_enum = 4;
+
+//                auto plan2 = freicar::planning::lane_follower::GetPlan(Point3D(previous_lane_points.x(),previous_lane_points.y() , 0), freicar::enums::PlannerCommand{HLC_enum}, 15,25);
+                PublishPlan(plan2, 1.0, 0.1, 0.4, 300, "plan_1", tf);
                 junction_arrived = false;
+                HLC_bool = false;
+
+            }
+
+            if(goal_bool.data == true) {
+//                std::cout<<"HOW MANY TIMES IS THIS CALLED ?"<<std::endl;
+//
+//                auto plan = freicar::planning::lane_follower::GetPlan(Point3D(p_current.x(), p_current.y() , 0), freicar::enums::PlannerCommand{HLC_enum}, 15,30); //TODO
+//                PublishPlan(plan, 1.0, 0.1, 0.4, 300, "plan_1", tf);
+//
+//                HLC_bool = false;
+//                continue_flag=0;
+//                junction_arrived = false;
+                auto plan = freicar::planning::lane_follower::GetPlan(Point3D(p_closest_plan.x(),p_closest_plan.y() , 0), freicar::enums::PlannerCommand{HLC_enum}, 15,30); //TODO
+                ///TEST
+                auto previous_lane_points = map.FindClosestLanePoints(p_closest_plan.x(),
+                                                                      p_closest_plan.y(),
+                                                                      0,
+                                                                      1)[0].first;
+                const freicar::mapobjects::Lane *previous_lane;
+                previous_lane = map.FindLaneByUuid(previous_lane_points.GetLaneUuid());
+
+                ///TEST
+//                auto plan = freicar::planning::lane_follower::GetPlan(Point3D(p_closest_plan.x(),p_closest_plan.y() , 0), freicar::enums::PlannerCommand{HLC_enum}, 15,25); //TODO
+                PublishPlan(plan, 1.0, 0.1, 0.4, 300, "plan_1", tf);
+                HLC_bool = false;
+                junction_arrived = false;
+            }
+
+            if (overtake.data == true) {
+                overtake.data = false;
+                //std::cout << "x postion " << p_current.x() << std::endl;
+                //std::cout << "current lane " << current_lane->GetUuid().GetUuidValue() << std::endl;
+                //std::cout << "I'm here or not" << goal_bool.data << std::endl;
+                //OPPOSITE LANE FROM CAR
+                auto *opposite_lane = current_lane->GetConnection(freicar::mapobjects::Lane::OPPOSITE);
+                auto opposite_l_uuid = opposite_lane->GetUuid().GetUuidValue();
+                std::cout << "opposite lane " << opposite_l_uuid << std::endl;
+                //float width = opposite_lane->GetWidth();
+                //auto opposite_points = opposite_lane->GetPoints();
+                //fake plan
+                //CREATE A PLAN
+                auto plan4 = freicar::planning::lane_follower::GetPlan(
+                        Point3D(p_closest.x(), p_closest.y(), p_closest.z()), freicar::enums::STRAIGHT, 10, 30);
+                std::cout << "postion x  before starting points " << plan4[0].position.x() << std::endl;
+                //2.5 METERS FROM MY POSITION
+                Point3D starting_plan = Point3D(plan4[4].position.x(), plan4[4].position.y(),
+                                                plan4[4].position.z());
+
+                auto q_closest = map.FindClosestLanePoints(starting_plan.x(),
+                                                           starting_plan.y(),
+                                                           starting_plan.z(),
+                                                           1)[0].first;
+                //CURRENT LANE OF THE POINT AT 2.5 METERS AWAY
+                const freicar::mapobjects::Lane *current_lane2;
+                current_lane2 = map.FindLaneByUuid(p_closest.GetLaneUuid());
+                //OPPOSITE LANE OF THAT POINT
+                auto *opposite_lane2 = current_lane2->GetConnection(freicar::mapobjects::Lane::OPPOSITE);
+                auto opposite_points = opposite_lane2->GetPoints();
+
+                std::cout << starting_plan.x() << std::endl;
+                Point3D closest_point;
+                //std::cout<< closest_point.x() << std::endl;
+                std::cout << opposite_points.size() << std::endl;
+                float dist = 2.0f;
+                auto opposite_l_uuid2 = opposite_lane2->GetUuid().GetUuidValue();
+                std::cout << "uuid other lane: " << opposite_l_uuid2 << std::endl;
+                std::cout << "dist" << dist << std::endl;
+                //ITERATE OVER ALL POINTS IN THE OPPOSITE LANE TO GET THE CLOSEST
+                for (auto &opposite_point : opposite_points) {
+                    std::cout << "dist inside "
+                              << opposite_point.ComputeDistance(starting_plan.x(), starting_plan.y(), starting_plan.z()) << std::endl;
+                    if (opposite_point.ComputeDistance(starting_plan.x(), starting_plan.y(), starting_plan.z()) < dist) {
+                        closest_point = opposite_point;
+                        dist = opposite_point.ComputeDistance(starting_plan.x(), starting_plan.y(), starting_plan.z());
+                        std::cout << "dist inside " << dist << std::endl;
+
+                    }
+
+                }
+
+
+                //std::cout << "closest" << closest_point.x() << std::endl;
+                //FAKE PLAN TO OVERTAKE
+                auto planovertake2 = freicar::planning::lane_follower::GetPlan(
+                        Point3D(closest_point.x(), closest_point.y(), closest_point.z()), freicar::enums::STRAIGHT,
+                        2.5, 5);
+
+                //SET THE NEW POINT TO THE PLAN
+                plan4[0].position.SetX(planovertake2[4].position.x());
+                plan4[0].position.SetY(planovertake2[4].position.y());
+                plan4[0].position.SetZ(planovertake2[4].position.z());
+                plan4[1].position.SetX(planovertake2[3].position.x());
+                plan4[1].position.SetY(planovertake2[3].position.y());
+                plan4[1].position.SetZ(planovertake2[3].position.z());
+                plan4[2].position.SetX(planovertake2[2].position.x());
+                plan4[2].position.SetY(planovertake2[2].position.y());
+                plan4[2].position.SetZ(planovertake2[2].position.z());
+                plan4[3].position.SetX(planovertake2[1].position.x());
+                plan4[3].position.SetY(planovertake2[1].position.y());
+                plan4[3].position.SetZ(planovertake2[1].position.z());
+                plan4[4].position.SetX(planovertake2[0].position.x());
+                plan4[4].position.SetY(planovertake2[0].position.y());
+                plan4[4].position.SetZ(planovertake2[0].position.z());
+                //PUBLISH PLAN
+                PublishPlan(plan4, 1.0, 0.1, 0.4, 300, "plan_1", tf);
+                //overtaking_done = false;
             }
 
 
@@ -403,12 +575,65 @@ int main(int argc, char **argv)
             freicar::logic::JunctionAgent::Intent{0};
             freicar::logic::JunctionAgent agent_junction = freicar::logic::JunctionAgent(p_current_row) ;
 
+            p_observed_agent.current_pose = p_current_row.current_pose;
+            p_observed_agent.current_pose.transform.translation.x = 2.1;
+            p_observed_agent.current_pose.transform.translation.y = 3.26;
+            p_observed_agent.current_pose.transform.translation.z = 0.0f;
+
+            p_observed_agent.current_pose.transform.rotation.x = 0.0;
+            p_observed_agent.current_pose.transform.rotation.y = 0.0;
+            p_observed_agent.current_pose.transform.rotation.z = 0.0;
+            p_observed_agent.current_pose.transform.rotation.w = 1.0;
+
+            p_observed_agent.velocity = p_current_row.velocity ;
+            p_observed_agent.velocity.x = 0.0 ;
+            p_observed_agent.velocity.y =  0.0;
+            p_observed_agent.velocity.z =  0.0;
+
+            p_observed_agent.name = "observed_1";
+            p_observed_agent.lane_offset = 0.0f;
+
+            auto p_closest_observed = map.FindClosestLanePoints(p_observed_agent.current_pose.transform.translation.x,
+                                                                p_observed_agent.current_pose.transform.translation.y,
+                                                                p_observed_agent.current_pose.transform.translation.z,
+                                                                1)[0].first;
+            std::string current_l_uuid_observed = p_closest_observed.GetLaneUuid();
+            p_observed_agent.lane_uuid = current_l_uuid_observed;
+
+//            std::cout<<"our agent name"<<p_current_row.name<<std::endl;
+//            std::cout<<"observed agent name"<<p_observed_agent.name<<std::endl;
+
+            freicar::logic::JunctionAgent observed_agent = freicar::logic::JunctionAgent(p_observed_agent) ;
+
+
+
+            std::vector<freicar::logic::JunctionAgent> observed_agents;
+            observed_agents.push_back(observed_agent);
+
+            std::vector<freicar::logic::JunctionAgent> agents;
+            agents.push_back(agent_junction);
+
+            if (freicar::enums::PlannerCommand{HLC_enum} == 1)
+            {
+                agent_junction.intent = freicar::logic::JunctionAgent::Intent::GOING_LEFT;
+            }
+            else if (freicar::enums::PlannerCommand{HLC_enum} == 2){
+                agent_junction.intent = freicar::logic::JunctionAgent::Intent::GOING_RIGHT;
+            }
+            else {
+                agent_junction.intent = freicar::logic::JunctionAgent::Intent::GOING_STRAIGHT;
+            }
+            observed_agent.intent = freicar::logic::JunctionAgent::Intent::GOING_RIGHT;
             //Dummy agent
             //const freicar_common::FreiCarAgentLocalization& dummy1 =
 
             // std::cout<<"Junction Agent  =" << agent_junction.IsOnRightHandSideOf(agent_junction) << std::endl;
 //            std::cout<<"Junction Agent Offset = "<<freicar::logic::JunctionAgent::IsOnRightHandSideOf(freicar::logic::JunctionAgent(p_current_row))<<std::endl;
 //            std::cout<<"Junction Agent  =" << p_current_row.current_pose << p_current_row.velocity << std::endl;
+            bool one ;
+            bool two;
+            std::string three;
+            std::tie(one, two, three) = freicar::logic::GetRightOfWay(agent_junction, observed_agents, false, false);
         }
     });
 
