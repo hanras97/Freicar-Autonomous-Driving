@@ -408,61 +408,61 @@ int main(int argc, char **argv)
 //                                                             p_current.z(),
 //                                                             1)[0].first;
 
-            if (map.GetUpcomingJunctionID(current_l_uuid)!=-1  && map.GetUpcomingJunctionID(current_l_uuid) != junction_id)
-            {
+//             if (map.GetUpcomingJunctionID(current_l_uuid)!=-1  && map.GetUpcomingJunctionID(current_l_uuid) != junction_id)
+//             {
 
-                static tf::TransformListener enemy_listener;
-                static tf::StampedTransform enemy_transform;
-
-
+//                 static tf::TransformListener enemy_listener;
+//                 static tf::StampedTransform enemy_transform;
 
 
 
-                try{
-                    enemy_listener.lookupTransform("map", "enemy_agent",
-                                                   ros::Time(0), enemy_transform);
-
-                    enemy_agent.current_pose.transform.translation.x = enemy_transform.getOrigin().x();
-                    enemy_agent.current_pose.transform.translation.y = enemy_transform.getOrigin().y();
-                    enemy_agent.current_pose.transform.translation.z = 0.0f;
-
-                    enemy_agent.current_pose.transform.rotation.x = 0.0;
-                    enemy_agent.current_pose.transform.rotation.y = 0.0;
-                    enemy_agent.current_pose.transform.rotation.z = 0.0;
-                    enemy_agent.current_pose.transform.rotation.w = 1.0;
-
-                    auto enemy_approximate_lane_points = map.FindClosestLanePoints(enemy_agent.current_pose.transform.translation.x,
-                                                                                   enemy_agent.current_pose.transform.translation.y,
-                                                                                   enemy_agent.current_pose.transform.translation.z,
-                                                                                   1)[0].first;
-
-                    std::string enemy_lane_uuid = enemy_approximate_lane_points.GetLaneUuid();
-                    enemy_agent.lane_uuid = enemy_lane_uuid;
-
-                    std::vector<freicar::logic::JunctionAgent> enemy_agents;
-                    enemy_agents.push_back(enemy_agent);
 
 
-                }
-                catch (tf::TransformException ex){
-                    ROS_ERROR("%s",ex.what());
-                    ros::Duration(1.0).sleep();
-                }
+//                 try{
+//                     enemy_listener.lookupTransform("map", "enemy_agent",
+//                                                    ros::Time(0), enemy_transform);
 
-                junction_id = map.GetUpcomingJunctionID(current_l_uuid);
+//                     enemy_agent.current_pose.transform.translation.x = enemy_transform.getOrigin().x();
+//                     enemy_agent.current_pose.transform.translation.y = enemy_transform.getOrigin().y();
+//                     enemy_agent.current_pose.transform.translation.z = 0.0f;
 
-               // auto plan2 = freicar::planning::lane_follower::GetPlan(Point3D(p_closest_plan.x(),p_closest_plan.y() , 0),freicar::enums::PlannerCommand{HLC_enum}, 15,30);
+//                     enemy_agent.current_pose.transform.rotation.x = 0.0;
+//                     enemy_agent.current_pose.transform.rotation.y = 0.0;
+//                     enemy_agent.current_pose.transform.rotation.z = 0.0;
+//                     enemy_agent.current_pose.transform.rotation.w = 1.0;
 
-//                auto plan2 = freicar::planning::lane_follower::GetPlan(Point3D(p_closest_plan.x(),p_closest_plan.y() , 0), freicar::enums::PlannerCommand{HLC_enum}, 15,25);
-                // reeset HLC
-                HLC_enum = 4;
+//                     auto enemy_approximate_lane_points = map.FindClosestLanePoints(enemy_agent.current_pose.transform.translation.x,
+//                                                                                    enemy_agent.current_pose.transform.translation.y,
+//                                                                                    enemy_agent.current_pose.transform.translation.z,
+//                                                                                    1)[0].first;
 
-//                auto plan2 = freicar::planning::lane_follower::GetPlan(Point3D(previous_lane_points.x(),previous_lane_points.y() , 0), freicar::enums::PlannerCommand{HLC_enum}, 15,25);
-                //PublishPlan(plan2, 1.0, 0.1, 0.4, 300, "plan_1", tf);
-                junction_arrived = false;
-                HLC_bool = false;
+//                     std::string enemy_lane_uuid = enemy_approximate_lane_points.GetLaneUuid();
+//                     enemy_agent.lane_uuid = enemy_lane_uuid;
 
-            }
+//                     std::vector<freicar::logic::JunctionAgent> enemy_agents;
+//                     enemy_agents.push_back(enemy_agent);
+
+
+//                 }
+//                 catch (tf::TransformException ex){
+//                     ROS_ERROR("%s",ex.what());
+//                     ros::Duration(1.0).sleep();
+//                 }
+
+//                 junction_id = map.GetUpcomingJunctionID(current_l_uuid);
+
+//                // auto plan2 = freicar::planning::lane_follower::GetPlan(Point3D(p_closest_plan.x(),p_closest_plan.y() , 0),freicar::enums::PlannerCommand{HLC_enum}, 15,30);
+
+// //                auto plan2 = freicar::planning::lane_follower::GetPlan(Point3D(p_closest_plan.x(),p_closest_plan.y() , 0), freicar::enums::PlannerCommand{HLC_enum}, 15,25);
+//                 // reeset HLC
+//                // HLC_enum = 4;
+
+// //                auto plan2 = freicar::planning::lane_follower::GetPlan(Point3D(previous_lane_points.x(),previous_lane_points.y() , 0), freicar::enums::PlannerCommand{HLC_enum}, 15,25);
+//                 //PublishPlan(plan2, 1.0, 0.1, 0.4, 300, "plan_1", tf);
+//                // junction_arrived = false;
+//                 HLC_bool = false;
+
+//             }
 
             if(goal_bool.data == true) {
 //                std::cout<<"HOW MANY TIMES IS THIS CALLED ?"<<std::endl;
