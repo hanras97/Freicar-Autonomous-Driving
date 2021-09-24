@@ -81,18 +81,18 @@ def callback(msg):
     preds = postprocess(img_tensor, anchors, regression, classification, regressBoxes, clipBoxes, threshold,nms_threshold)
     preds = preds[0]
     
-    bb_msg = preds['rois']
-
-    if(preds['scores'][0] > 0.50 ):
-        bb_msg = preds['rois']
-    else:
+   bb_msg = preds['rois']
+    try:
+        if(preds['scores'][0] > 0.50 ):
+            bb_msg = preds['rois']
+    except IndexError:
         bb_msg = preds['rois']
         bb_msg[0][0] = 0.0
         bb_msg[0][1] = 0.0
         bb_msg[0][2] = 0.0
         bb_msg[0][3] = 0.0
 
-    pub = rospy.Publisher('/freicar_1/bounding_box', bb, queue_size=10)
+    pub = rospy.Publisher(car_name+'/bounding_box', bb, queue_size=10)
 
     rate = rospy.Rate(10)  # 10hz
 
@@ -105,7 +105,7 @@ def callback(msg):
 
 def subscriber_publisher():
     rospy.init_node('rospubsub', anonymous=True)
-    img_sub = rospy.Subscriber('/freicar_1/sim/camera/rgb/front/image', Image, callback, queue_size=10)
+    img_sub = rospy.Subscriber(car_name+'/sim/camera/rgb/front/image', Image, callback, queue_size=10)
     rospy.spin()
 
 
