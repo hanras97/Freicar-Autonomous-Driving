@@ -404,9 +404,9 @@ int main(int argc, char **argv)
 
             }
            // auto p_closest_plan = map.FindClosestLanePoints(p_current.x(),
-                                                            p_current.y(),
-                                                            p_current.z(),
-                                                            1)[0].first;
+//                                                             p_current.y(),
+//                                                             p_current.z(),
+//                                                             1)[0].first;
 
             if (map.GetUpcomingJunctionID(current_l_uuid)!=-1  && map.GetUpcomingJunctionID(current_l_uuid) != junction_id)
             {
@@ -458,7 +458,7 @@ int main(int argc, char **argv)
                 HLC_enum = 4;
 
 //                auto plan2 = freicar::planning::lane_follower::GetPlan(Point3D(previous_lane_points.x(),previous_lane_points.y() , 0), freicar::enums::PlannerCommand{HLC_enum}, 15,25);
-                PublishPlan(plan2, 1.0, 0.1, 0.4, 300, "plan_1", tf);
+                //PublishPlan(plan2, 1.0, 0.1, 0.4, 300, "plan_1", tf);
                 junction_arrived = false;
                 HLC_bool = false;
 
@@ -475,12 +475,12 @@ int main(int argc, char **argv)
 //                junction_arrived = false;
                 //auto plan = freicar::planning::lane_follower::GetPlan(Point3D(p_closest_plan.x(),p_closest_plan.y() , 0), freicar::enums::PlannerCommand{HLC_enum}, 15,30); //TODO
                 ///TEST
-                auto previous_lane_points = map.FindClosestLanePoints(p_closest_plan.x(),
-                                                                      p_closest_plan.y(),
-                                                                      0,
-                                                                      1)[0].first;
-                const freicar::mapobjects::Lane *previous_lane;
-                previous_lane = map.FindLaneByUuid(previous_lane_points.GetLaneUuid());
+//                 auto previous_lane_points = map.FindClosestLanePoints(p_closest_plan.x(),
+//                                                                       p_closest_plan.y(),
+//                                                                       0,
+//                                                                       1)[0].first;
+//                 const freicar::mapobjects::Lane *previous_lane;
+//                 previous_lane = map.FindLaneByUuid(previous_lane_points.GetLaneUuid());
 
                 ///TEST
 //                auto plan = freicar::planning::lane_follower::GetPlan(Point3D(p_closest_plan.x(),p_closest_plan.y() , 0), freicar::enums::PlannerCommand{HLC_enum}, 15,25); //TODO
