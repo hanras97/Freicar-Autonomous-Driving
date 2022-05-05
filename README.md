@@ -1,16 +1,21 @@
 # Freicar-Autonomous-Driving 
 ## How to run ?
-### Start the simulator
-`roslaunch freicar_launch_sr sim_base2_row.launch`.
+### Install Dependencies
+`./setup_env.sh`
+### Run start bash script
+`./start.sh`
+## Debug each module seperately!
+### Starting the simulator
+`roslaunch freicar_launch_ sim_base.launch`.
 
-### Start the localizer:
-`rosrun freicar_localization_sr freicar_localization_sr_node `
+### Starting the localizer:
+`rosrun freicar_localization_1 freicar_localization_1_node `
 `rosrun freicar_sign_detect freicar_sign_detect_node `
 
-### Start the controller:
-`roslaunch freicar_control_sr start_controller.launch `
+### Starting the controller:
+`roslaunch freicar_control_ start_controller.launch `
 
-### Publish the path:
-`roscd freicar_control_sr/scripts/`
+### Publishing the path:
+`roscd freicar_control_/scripts/`
 `anaconda`
 `python save_path.py `
